@@ -1,6 +1,8 @@
 import {
   jahiaComponent,
   Island,
+  server,
+  buildNodeUrl,
   AddResources,
   buildModuleFileUrl,
 } from "@jahia/javascript-modules-library";
@@ -15,9 +17,20 @@ export default jahiaComponent(
     name: "default",
     displayName: "External Video",
   },
-  (props: ExternalVideoProps) => {
+  (props: ExternalVideoProps, { renderContext }) => {
     const { "jcr:title": title, videoService, videoId, videoPoster } = props;
-    const posterUrl = videoPoster?.path ? `/files/default${videoPoster.path}` : undefined;
+
+    // CRITICAL: Handle JCR nodes OR plain objects
+    let posterUrl = undefined;
+
+    if (videoPoster) {
+      if (videoPoster.getPath && typeof videoPoster.getPath === "function") {
+        server.render.addCacheDependency({ node: videoPoster }, renderContext);
+        posterUrl = buildNodeUrl(videoPoster);
+      } else if (videoPoster.path) {
+        posterUrl = `/files/default${videoPoster.path}`;
+      }
+    }
 
     if (!videoId) {
       return (

@@ -207,11 +207,58 @@ import ClientComponent from "./component.island.client";
 2. **File reference object** - Has properties like `{ path: string, uuid: string }`
 3. **Serialized data** - Plain objects with data already extracted
 
-### 3.2 Iterating Folder Contents
+### 3.2 Rendering Child Nodes in List Components
 
-**CRITICAL PATTERN - Folder Reference Detection:**
+**CRITICAL:** Use `getChildNodes` + `Render` component pattern, not `renderChildren()`.
 
-A folder property can be passed in two different ways:
+**Reference: employee-portal repository patterns (CafeteriaMenu, JcrQuery, Footer)**
+
+```tsx
+import { jahiaComponent, getChildNodes, Render } from "@jahia/javascript-modules-library";
+
+export default jahiaComponent(
+  {
+    componentType: "view",
+    nodeType: "yourmodulent:gallery",
+    name: "default",
+  },
+  (props, { currentNode }) => {
+    // Get all child nodes
+    const childNodes = getChildNodes(currentNode, -1, 0);
+
+    return (
+      <div className={classes.gallery}>
+        {childNodes.map((childNode) => (
+          <Render key={childNode.getIdentifier()} node={childNode} view="gallery" />
+        ))}
+      </div>
+    );
+  },
+);
+```
+
+**Key Points:**
+
+- `getChildNodes(node, maxItems, offset)` returns array of child nodes
+- Use `-1` for unlimited items
+- Use `Render` component (capital R) to render each child
+- `key={childNode.getIdentifier()}` for React reconciliation
+- `view="gallery"` specifies which view to render
+- **NEVER use `server.render.render()` directly** - use `Render` component
+- **`renderChildren()` does NOT exist** - it's not available in the library
+
+**Optional Filtering:**
+
+```tsx
+// Filter by node type
+const childNodes = getChildNodes(currentNode, -1, 0, (node) => node.isNodeType("jmix:image"));
+```
+
+### 3.3 Iterating Folder Contents
+
+**CRITICAL PATTERN - File/Folder Reference Detection:**
+
+A file or folder property can be passed in two different ways:
 
 1. As a JCR Node object itself (has methods like `getPath()`)
 2. As a plain object with properties like `{ path: string, uuid: string }`
@@ -254,6 +301,20 @@ if (folderReference) {
 }
 ```
 
+**Building URLs for File References:**
+
+```tsx
+// For JCR file nodes (has getPath method)
+if (video.getPath && typeof video.getPath === "function") {
+  server.render.addCacheDependency({ node: video }, renderContext);
+  videoUrl = buildNodeUrl(video);
+}
+// For file objects (has path property)
+else if (video.path) {
+  videoUrl = `/files/default${video.path}`;
+}
+```
+
 **JSP Equivalent Pattern:**
 
 ```jsp
@@ -269,28 +330,57 @@ if (folderReference) {
 
 **Why This Matters:**
 
-- `getChildNodes()` helper doesn't always work with filters
-- Must use `getNodes()` + `NodeIterator` pattern
 - Must check BOTH `getPath()` method AND `.path` property
-- This matches the JSP iteration pattern exactly### 3.3 Building File URLs
+- JCR nodes need `buildNodeUrl()`, objects need manual path construction
+- This matches the JSP iteration pattern exactly
+- Same pattern applies to ALL file/folder references (images, videos, documents)### 3.4 Building File URLs (UPDATED)
 
-**For JCR File Nodes:**
+**For JCR File Nodes (has getPath method):**
 
 ```tsx
-// Use buildNodeUrl() for file nodes
-const images = imageNodes.map((node) => {
-  server.render.addCacheDependency({ node }, renderContext);
-  return {
-    url: buildNodeUrl(node),
-    title: "",
-    description: "",
-  };
-});
+if (file.getPath && typeof file.getPath === "function") {
+  // This is a JCR node - use buildNodeUrl
+  server.render.addCacheDependency({ node: file }, renderContext);
+  const fileUrl = buildNodeUrl(file);
+}
 ```
 
-**For File Reference Objects (with .path property):**
+**For File Reference Objects (has .path property):**
 
-### 3.4 Common JCR Methods
+```tsx
+if (file.path) {
+  // This is a plain object - construct URL manually
+  const fileUrl = `/files/default${file.path}`;
+}
+```
+
+**Complete Pattern for File/Folder References:**
+
+```tsx
+let fileUrl = "";
+
+if (fileReference) {
+  // Check if it's a JCR node (has methods)
+  if (fileReference.getPath && typeof fileReference.getPath === "function") {
+    server.render.addCacheDependency({ node: fileReference }, renderContext);
+    fileUrl = buildNodeUrl(fileReference);
+  }
+  // Check if it's a plain object (has properties)
+  else if (fileReference.path) {
+    fileUrl = `/files/default${fileReference.path}`;
+  }
+}
+```
+
+**Why Both Checks Are Needed:**
+
+- Content created via Content Editor may pass JCR nodes directly
+- Content imported or created programmatically may pass plain objects
+- VideoHeading, InternalVideo, ExternalVideo all use this pattern
+- ImageGallery folder reference uses this pattern
+- **ALWAYS check both patterns for file/folder/image references**
+
+### 3.5 Common JCR Methods
 
 ```typescript
 // Node methods

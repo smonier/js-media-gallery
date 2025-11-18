@@ -2,6 +2,8 @@ import {
   jahiaComponent,
   AddResources,
   buildModuleFileUrl,
+  getChildNodes,
+  Render,
 } from "@jahia/javascript-modules-library";
 import type { VideoGalleryProps } from "./types";
 import classes from "./VideoGallery.module.css";
@@ -13,8 +15,10 @@ export default jahiaComponent(
     name: "featured",
     displayName: "Featured + Grid",
   },
-  (props: VideoGalleryProps, { renderChildren }) => {
+  (props: VideoGalleryProps, { currentNode }) => {
     const { "jcr:title": title, bannerText } = props;
+
+    const childNodes = getChildNodes(currentNode, -1, 0);
 
     return (
       <>
@@ -25,7 +29,11 @@ export default jahiaComponent(
             <div className={classes.banner} dangerouslySetInnerHTML={{ __html: bannerText }} />
           )}
 
-          <div className={classes.featuredSection}>{renderChildren({ view: "gallery" })}</div>
+          <div className={classes.featuredSection}>
+            {childNodes.map((childNode) => (
+              <Render key={childNode.getIdentifier()} node={childNode} view="gallery" />
+            ))}
+          </div>
         </div>
       </>
     );

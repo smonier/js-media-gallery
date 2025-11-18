@@ -1,11 +1,6 @@
-import { jahiaComponent } from "@jahia/javascript-modules-library";
+import { jahiaComponent, server, buildNodeUrl } from "@jahia/javascript-modules-library";
 import type { InternalVideoProps } from "./types";
 import classes from "./InternalVideo.module.css";
-
-const buildFileUrl = (fileNode: { path: string } | undefined) => {
-  if (!fileNode?.path) return undefined;
-  return `/files/default${fileNode.path}`;
-};
 
 export default jahiaComponent(
   {
@@ -14,10 +9,30 @@ export default jahiaComponent(
     name: "gallery",
     displayName: "Gallery Item",
   },
-  (props: InternalVideoProps) => {
+  (props: InternalVideoProps, { renderContext }) => {
     const { "jcr:title": title, video, videoPoster } = props;
-    const videoUrl = buildFileUrl(video);
-    const posterUrl = buildFileUrl(videoPoster);
+
+    // CRITICAL: Handle JCR nodes OR plain objects
+    let videoUrl = undefined;
+    let posterUrl = undefined;
+
+    if (video) {
+      if (video.getPath && typeof video.getPath === "function") {
+        server.render.addCacheDependency({ node: video }, renderContext);
+        videoUrl = buildNodeUrl(video);
+      } else if (video.path) {
+        videoUrl = `/files/default${video.path}`;
+      }
+    }
+
+    if (videoPoster) {
+      if (videoPoster.getPath && typeof videoPoster.getPath === "function") {
+        server.render.addCacheDependency({ node: videoPoster }, renderContext);
+        posterUrl = buildNodeUrl(videoPoster);
+      } else if (videoPoster.path) {
+        posterUrl = `/files/default${videoPoster.path}`;
+      }
+    }
 
     if (!videoUrl) {
       return (

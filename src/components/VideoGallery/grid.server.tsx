@@ -2,6 +2,8 @@ import {
   jahiaComponent,
   AddResources,
   buildModuleFileUrl,
+  getChildNodes,
+  Render,
 } from "@jahia/javascript-modules-library";
 import type { VideoGalleryProps } from "./types";
 import classes from "./VideoGallery.module.css";
@@ -13,8 +15,10 @@ export default jahiaComponent(
     name: "grid",
     displayName: "Grid View",
   },
-  (props: VideoGalleryProps, { renderChildren }) => {
+  (props: VideoGalleryProps, { currentNode }) => {
     const { "jcr:title": title, bannerText, itemWidth = 250 } = props;
+
+    const childNodes = getChildNodes(currentNode, -1, 0);
 
     return (
       <>
@@ -29,7 +33,9 @@ export default jahiaComponent(
             className={classes.grid}
             style={{ "--item-width": `${itemWidth}px` } as React.CSSProperties}
           >
-            {renderChildren({ view: "gallery" })}
+            {childNodes.map((childNode) => (
+              <Render key={childNode.getIdentifier()} node={childNode} view="gallery" />
+            ))}
           </div>
         </div>
       </>
