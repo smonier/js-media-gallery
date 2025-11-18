@@ -1,0 +1,9 @@
+<jnt = 'http://www.jahia.org/jahia/nt/1.0'>
+<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+<jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
+
+[jsmediagallerynt:externalVideo] > jnt:content, mix:title
+ - videoService (string)
+ - videoId (string) i18n
+ - videoPoster (weakreference, picker[type='image']) < 'jmix:image'
+ - featured (boolean) = false 

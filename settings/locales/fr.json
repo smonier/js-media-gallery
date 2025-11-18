@@ -1,0 +1,49 @@
+{
+  "mediaGallery": {
+    "imageGallery": {
+      "title": "Galerie d'images",
+      "noImages": "Aucune image disponible",
+      "views": {
+        "grid": "Vue en grille",
+        "masonry": "Disposition en maçonnerie",
+        "carousel": "Carrousel"
+      }
+    },
+    "videoGallery": {
+      "title": "Galerie de vidéos",
+      "noVideos": "Aucune vidéo disponible",
+      "views": {
+        "featured": "Mise en avant + Grille",
+        "grid": "Vue en grille"
+      }
+    },
+    "internalVideo": {
+      "title": "Vidéo interne",
+      "noVideo": "Aucune vidéo sélectionnée",
+      "selectVideo": "Sélectionner un fichier vidéo"
+    },
+    "externalVideo": {
+      "title": "Vidéo externe",
+      "noVideoId": "Aucun ID de vidéo fourni",
+      "services": {
+        "youtube": "YouTube",
+        "vimeo": "Vimeo",
+        "wistia": "Wistia",
+        "dailymotion": "Dailymotion"
+      }
+    },
+    "videoHeading": {
+      "title": "Bannière vidéo héros",
+      "noVideo": "Aucune vidéo sélectionnée"
+    },
+    "common": {
+      "play": "Lecture",
+      "pause": "Pause",
+      "previous": "Précédent",
+      "next": "Suivant",
+      "close": "Fermer",
+      "loading": "Chargement...",
+      "error": "Une erreur s'est produite"
+    }
+  }
+}

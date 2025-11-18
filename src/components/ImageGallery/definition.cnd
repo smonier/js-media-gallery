@@ -1,0 +1,20 @@
+<jnt = 'http://www.jahia.org/jahia/nt/1.0'>
+<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+<jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
+<jsmediagallerymix = 'http://modules.se.jahia.org/mediagal/mix/1.0'>
+
+[jsmediagallerymix:directoryLink] > jmix:dynamicFieldset mixin
+ extends = jsmediagallerynt:imageGallery
+ - folder (weakreference, picker[type='folder'])
+
+[jsmediagallerymix:imagesLink] > jmix:dynamicFieldset mixin
+ extends = jsmediagallerynt:imageGallery
+ - imagesList (weakreference, picker[type='image']) multiple
+
+[jsmediagallerynt:imageGallery] > jnt:content, mix:title, jsmediagallerymix:component, jmix:list
+ - bannerText (string, richtext) internationalized
+ - imgGalleryType (string)
+
+
+
+

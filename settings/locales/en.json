@@ -1,0 +1,49 @@
+{
+  "mediaGallery": {
+    "imageGallery": {
+      "title": "Image Gallery",
+      "noImages": "No images available",
+      "views": {
+        "grid": "Grid View",
+        "masonry": "Masonry Layout",
+        "carousel": "Carousel"
+      }
+    },
+    "videoGallery": {
+      "title": "Video Gallery",
+      "noVideos": "No videos available",
+      "views": {
+        "featured": "Featured + Grid",
+        "grid": "Grid View"
+      }
+    },
+    "internalVideo": {
+      "title": "Internal Video",
+      "noVideo": "No video selected",
+      "selectVideo": "Select a video file"
+    },
+    "externalVideo": {
+      "title": "External Video",
+      "noVideoId": "No video ID provided",
+      "services": {
+        "youtube": "YouTube",
+        "vimeo": "Vimeo",
+        "wistia": "Wistia",
+        "dailymotion": "Dailymotion"
+      }
+    },
+    "videoHeading": {
+      "title": "Video Hero Banner",
+      "noVideo": "No video selected"
+    },
+    "common": {
+      "play": "Play",
+      "pause": "Pause",
+      "previous": "Previous",
+      "next": "Next",
+      "close": "Close",
+      "loading": "Loading...",
+      "error": "An error occurred"
+    }
+  }
+}

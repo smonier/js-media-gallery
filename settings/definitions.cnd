@@ -1,0 +1,8 @@
+<jnt = 'http://www.jahia.org/jahia/nt/1.0'>
+<jmix = 'http://www.jahia.org/jahia/mix/1.0'>
+<jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
+<jsmediagallerymix = 'http://modules.se.jahia.org/mediagal/mix/1.0'>
+<seumix = 'http://modules.se.jahia.org/se-utils/mix/1.0'>
+
+// Shared mixins used across components
+[jsmediagallerymix:component] > jmix:droppableContent, jmix:accessControllableContent mixin

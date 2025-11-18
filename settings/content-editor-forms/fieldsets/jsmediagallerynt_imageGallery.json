@@ -1,0 +1,39 @@
+{
+  "name": "jsmediagallerynt:imageGallery",
+  "description": "Gallery Type Selection",
+  "dynamic": false,
+  "fields": [
+    {
+      "name": "imgGalleryType",
+      "selectorType": "Choicelist",
+      "valueConstraints": [
+        {
+          "value": {
+            "type": "String",
+            "value": "imgDirectory"
+          },
+          "displayValue": "From Directory",
+          "propertyList": [
+            {
+              "name": "addMixin",
+              "value": "jsmediagallerymix:directoryLink"
+            }
+          ]
+        },
+        {
+          "value": {
+            "type": "String",
+            "value": "imgFile"
+          },
+          "displayValue": "Select Images",
+          "propertyList": [
+            {
+              "name": "addMixin",
+              "value": "jsmediagallerymix:imagesLink"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,44 @@
+{
+  "name": "jsmediagallerynt:externalVideo",
+  "description": "External Video component",
+  "dynamic": false,
+  "fields": [
+    {
+      "name": "videoService",
+      "selectorType": "Choicelist",
+      "selectorOptionsMap": {
+        "allowCustomEntry": "false"
+      },
+      "valueConstraints": [
+        {
+          "displayValue": "YouTube",
+          "value": {
+            "type": "String",
+            "value": "youtube"
+          }
+        },
+        {
+          "displayValue": "Vimeo",
+          "value": {
+            "type": "String",
+            "value": "vimeo"
+          }
+        },
+        {
+          "displayValue": "Wistia",
+          "value": {
+            "type": "String",
+            "value": "wistia"
+          }
+        },
+        {
+          "displayValue": "Dailymotion",
+          "value": {
+            "type": "String",
+            "value": "dailymotion"
+          }
+        }
+      ]
+    }
+  ]
+}
