@@ -33,6 +33,7 @@
 .gridItem {
   background: #fff;
   border-radius: 8px;
+  border-color: transparent !important;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition:
@@ -81,6 +82,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   grid-auto-rows: 200px;
+  grid-auto-flow: dense;
   gap: 1.5rem;
   padding: 1rem 0;
 }
@@ -102,6 +104,7 @@
 .masonryItem {
   background: #fff;
   border-radius: 8px;
+  border-color: transparent !important;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: box-shadow 0.3s ease;
@@ -349,6 +352,179 @@
   font-size: 1.125rem;
 }
 
+/* Image Modal */
+.imageButton {
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.imageButton:hover {
+  transform: translateY(-4px);
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 64px;
+  height: 64px;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(4px);
+}
+
+.imageButton:hover .imageOverlay {
+  opacity: 1;
+}
+
+.imageModalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(8px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  animation: modalFadeIn 0.3s ease;
+}
+
+.imageModalContent {
+  background: #fff;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1400px;
+  max-height: 90vh;
+  overflow: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  position: relative;
+  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.imageModalClose {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.imageModalClose:hover {
+  background: #fff;
+  transform: scale(1.1);
+}
+
+.imageModalNav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.imageModalNav:hover {
+  background: #fff;
+  transform: translateY(-50%) scale(1.1);
+}
+
+.imageModalNavPrev {
+  left: 1rem;
+}
+
+.imageModalNavNext {
+  right: 1rem;
+}
+
+.imageModalImageWrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  border-radius: 16px 16px 0 0;
+  min-height: 400px;
+  max-height: 70vh;
+  overflow: hidden;
+}
+
+.imageModalImage {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.imageModalInfo {
+  padding: 2rem;
+  background: linear-gradient(to bottom, #fafafa, #fff);
+  border-radius: 0 0 16px 16px;
+}
+
+.imageModalTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  color: #1a1a1a;
+  line-height: 1.3;
+}
+
+.imageModalDescription {
+  font-size: 1rem;
+  color: #555;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.imageModalCounter {
+  position: absolute;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
 @media (max-width: 768px) {
   .defaultItem,
   .defaultItem:nth-child(even) {
@@ -366,5 +542,229 @@
 
   .defaultImageTitle {
     font-size: 1.5rem;
+  }
+
+  .imageModalOverlay {
+    padding: 1rem;
+  }
+
+  .imageModalContent {
+    border-radius: 12px;
+    max-height: 95vh;
+  }
+
+  .imageModalInfo {
+    padding: 1.5rem;
+  }
+
+  .imageModalTitle {
+    font-size: 1.5rem;
+  }
+
+  .imageModalDescription {
+    font-size: 0.938rem;
+  }
+
+  .imageModalNav {
+    width: 44px;
+    height: 44px;
+  }
+
+  .imageModalClose {
+    width: 36px;
+    height: 36px;
+  }
+}
+
+/* Gallery View */
+.galleryView {
+  width: 100%;
+}
+
+.galleryMain {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.galleryMainButton {
+  width: 100%;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease-in;
+}
+
+.galleryMainButton:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.galleryMainImage {
+  width: 100%;
+  height: auto;
+  max-height: 695px;
+  object-fit: cover;
+  display: block;
+}
+
+.galleryThumbnails {
+  display: flex;
+  flex-direction: row;
+  padding: 1rem 0;
+  margin: 0;
+  gap: 1rem;
+  list-style: none;
+}
+
+.galleryThumb {
+  display: flex;
+  flex: 0 1 100%;
+  max-width: 100%;
+}
+
+.galleryThumbButton {
+  width: 100%;
+  border: none;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  display: block;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: all 0.2s ease-in;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.galleryThumbButton:hover {
+  transform: scale(1.01);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.galleryThumbImage {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+  display: block;
+}
+
+.galleryThumbMore {
+  display: flex;
+  flex: 0 1 100%;
+  max-width: 100%;
+}
+
+.galleryThumbMore .galleryThumbButton {
+  background-color: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 16 / 10;
+}
+
+.galleryMoreCount {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #1a1a1a;
+}
+
+.galleryThumbFadeIn {
+  animation: fadeIn 0.3s ease-in;
+  animation-fill-mode: both;
+}
+
+/* Gallery Dialog (Modal) */
+.galleryDialog {
+  position: relative;
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 12px;
+  max-width: 90vw;
+  max-height: 90vh;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(8px);
+}
+
+.galleryDialogTitle {
+  color: white;
+  font-size: 1.5rem;
+  margin: 0 0 1.5rem;
+  text-align: center;
+}
+
+.gallerySlideshow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 0;
+}
+
+.gallerySlideshowImageWrapper {
+  max-width: 80vw;
+  max-height: 60vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.gallerySlideshowImage {
+  max-width: 100%;
+  max-height: 60vh;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.gallerySlideshowInfo {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
+  padding: 2rem 1rem 1rem;
+  color: white;
+}
+
+.gallerySlideshowTitle {
+  font-size: 1.25rem;
+  margin: 0 0 0.5rem;
+  color: white;
+}
+
+.gallerySlideshowDescription {
+  font-size: 0.938rem;
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.5;
+}
+
+/* Responsive thumbnails */
+@media (min-width: 576px) {
+  .galleryThumb,
+  .galleryThumbMore {
+    flex: 0 1 50%;
+    max-width: 50%;
+  }
+}
+
+@media (min-width: 768px) {
+  .galleryThumb,
+  .galleryThumbMore {
+    flex: 0 1 33.3333%;
+    max-width: 33.3333%;
+  }
+}
+
+@media (min-width: 1200px) {
+  .galleryThumb,
+  .galleryThumbMore {
+    flex: 0 1 20%;
+    max-width: 20%;
   }
 }

@@ -4,9 +4,11 @@ import {
   buildNodeUrl,
   AddResources,
   buildModuleFileUrl,
+  Island,
 } from "@jahia/javascript-modules-library";
 import type { ImageGalleryProps } from "./types";
 import classes from "./ImageGallery.module.css";
+import ImageModal from "./ImageModal.island.client";
 
 export default jahiaComponent<ImageGalleryProps>(
   {
@@ -109,32 +111,20 @@ export default jahiaComponent<ImageGalleryProps>(
           {bannerText && (
             <div className={classes.banner} dangerouslySetInnerHTML={{ __html: bannerText }} />
           )}
-          <div className={classes.masonry}>
-            {images.map((image, index) => {
-              const span = index % 3 === 0 ? 2 : 1;
-              return (
-                <div
-                  key={`${image.url}-${index}`}
-                  className={classes.masonryItem}
-                  style={{ gridRowEnd: `span ${span}` }}
-                >
+
+          <Island component={ImageModal} props={{ images, layout: "masonry" }}>
+            <div className={classes.masonry}>
+              {images.map((image, index) => (
+                <div key={`${image.url}-${index}`} className={classes.masonryItem}>
                   <img
                     src={image.url}
                     className={classes.masonryImage}
                     alt={image.title || `Image ${index + 1}`}
                   />
-                  {(image.title || image.description) && (
-                    <div className={classes.masonryCaption}>
-                      {image.title && <h3 className={classes.masonryTitle}>{image.title}</h3>}
-                      {image.description && (
-                        <p className={classes.masonryDescription}>{image.description}</p>
-                      )}
-                    </div>
-                  )}
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          </Island>
         </div>
       </>
     );

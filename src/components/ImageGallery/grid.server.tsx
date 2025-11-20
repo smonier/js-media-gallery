@@ -4,9 +4,11 @@ import {
   buildNodeUrl,
   AddResources,
   buildModuleFileUrl,
+  Island,
 } from "@jahia/javascript-modules-library";
 import type { ImageGalleryProps } from "./types";
 import classes from "./ImageGallery.module.css";
+import ImageModal from "./ImageModal.island.client";
 
 export default jahiaComponent<ImageGalleryProps>(
   {
@@ -106,26 +108,16 @@ export default jahiaComponent<ImageGalleryProps>(
           {bannerText && (
             <div className={classes.banner} dangerouslySetInnerHTML={{ __html: bannerText }} />
           )}
-          <div className={classes.grid}>
-            {images.map((image, index) => {
-              return (
+
+          <Island component={ImageModal} props={{ images, layout: "grid" }}>
+            <div className={classes.grid}>
+              {images.map((image, index) => (
                 <div key={`${image.url}-${index}`} className={classes.gridItem}>
-                  <div className={classes.imageWrapper}>
-                    <img
-                      src={image.url}
-                      alt={image.title || `Image ${index + 1}`}
-                      className={classes.image}
-                      loading="lazy"
-                    />
-                  </div>
-                  {image.title && <h3 className={classes.imageTitle}>{image.title}</h3>}
-                  {image.description && (
-                    <p className={classes.imageDescription}>{image.description}</p>
-                  )}
+                  <img src={image.url} alt={image.title || `Image ${index + 1}`} />
                 </div>
-              );
-            })}
-          </div>
+              ))}
+            </div>
+          </Island>
         </div>
       </>
     );

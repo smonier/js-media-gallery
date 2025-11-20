@@ -3,6 +3,7 @@
 <jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
 
 [jsmediagallerynt:externalVideo] > jnt:content, mix:title
+ - videoDesc (string) i18n
  - videoService (string)
  - videoId (string) i18n
  - videoPoster (weakreference, picker[type='image']) < 'jmix:image'
