@@ -1,18 +1,18 @@
 export interface VideoItem {
-  uuid: string;
+  "uuid": string;
   "jcr:title"?: string;
-  nodeType: string;
-  featured?: boolean;
+  "nodeType": string;
+  "featured"?: boolean;
   // Internal video
-  video?: {
+  "video"?: {
     url: string;
     path: string;
   };
   // External video
-  videoService?: "youtube" | "vimeo" | "wistia" | "dailymotion";
-  videoId?: string;
+  "videoService"?: "youtube" | "vimeo" | "wistia" | "dailymotion" | "storylane";
+  "videoId"?: string;
   // Common
-  videoPoster?: {
+  "videoPoster"?: {
     url: string;
     path: string;
   };
@@ -20,9 +20,9 @@ export interface VideoItem {
 
 export interface VideoGalleryProps {
   "jcr:title"?: string;
-  bannerText?: string;
-  itemWidth?: number;
-  videos?: VideoItem[];
+  "bannerText"?: string;
+  "itemWidth"?: number;
+  "videos"?: VideoItem[];
 }
 
 export interface VideoPlayerProps {

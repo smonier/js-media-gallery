@@ -54,6 +54,8 @@ export default function FeaturedGallery({ videos }: FeaturedGalleryProps) {
         return `https://fast.wistia.net/embed/iframe/${videoId}`;
       case "dailymotion":
         return `https://www.dailymotion.com/embed/video/${videoId}`;
+      case "storylane":
+        return `https://app.storylane.io/share/${videoId}`;
       default:
         return "";
     }
@@ -73,6 +75,8 @@ export default function FeaturedGallery({ videos }: FeaturedGalleryProps) {
         return `https://fast.wistia.com/embed/medias/${videoId}/swatch`;
       case "dailymotion":
         return `https://www.dailymotion.com/thumbnail/video/${videoId}`;
+      case "storylane":
+        return `https://app.storylane.io/share/${videoId}/thumbnail.png`;
       default:
         return undefined;
     }
@@ -167,21 +171,28 @@ export default function FeaturedGallery({ videos }: FeaturedGalleryProps) {
                     ) : (
                       <div className={classes.thumbnailPlaceholder}>
                         <svg
-                          width="48"
-                          height="48"
+                          width="32"
+                          height="32"
                           viewBox="0 0 24 24"
                           fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
+                          xmlns="http://www.w3.org/2000/svg"
                         >
-                          <polygon points="5 3 19 12 5 21 5 3" />
+                          <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.95" />
+                          <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" />
                         </svg>
                       </div>
                     )}
                     {index === activeIndex && (
-                      <div className={classes.thumbnailActiveIndicator}>
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                          <polygon points="5 3 19 12 5 21 5 3" />
+                      <div className={classes.playButton}>
+                        <svg
+                          width="32"
+                          height="32"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.95" />
+                          <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" />
                         </svg>
                       </div>
                     )}

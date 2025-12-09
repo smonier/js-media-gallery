@@ -37,6 +37,13 @@
             "type": "String",
             "value": "dailymotion"
           }
+        },
+        {
+          "displayValue": "Storylane",
+          "value": {
+            "type": "String",
+            "value": "storylane"
+          }
         }
       ]
     }

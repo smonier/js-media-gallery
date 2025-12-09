@@ -1,12 +1,13 @@
 .hero {
   position: relative;
   width: 100%;
-  height: 100vh;
-  min-height: 600px;
+  height: 70vh;
+  min-height: 500px;
   overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  margin: 0 auto;
 }
 
 .videoBackground {
@@ -41,11 +42,7 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 0.3),
-    rgba(0, 0, 0, 0.6)
-  );
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
 }
 
 .content {
@@ -114,8 +111,8 @@
 
 @media (max-width: 768px) {
   .hero {
-    height: 80vh;
-    min-height: 500px;
+    height: 60vh;
+    min-height: 400px;
   }
 
   .title {

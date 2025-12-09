@@ -11,7 +11,7 @@ export default jahiaComponent(
     displayName: "Gallery Item",
   },
   (props: ExternalVideoProps, { renderContext }) => {
-    const { "jcr:title": title, videoService, videoId, videoPoster } = props;
+    const { "jcr:title": title, videoDesc, videoService, videoId, videoPoster } = props;
 
     // CRITICAL: Handle JCR nodes OR plain objects
     let posterUrl = undefined;
@@ -45,6 +45,7 @@ export default jahiaComponent(
               videoId,
               posterUrl,
               title,
+              videoDesc,
             }}
           >
             <div className={classes.videoFallback}>
@@ -55,6 +56,7 @@ export default jahiaComponent(
           </Island>
         </div>
         {title && <h4 className={classes.galleryTitle}>{title}</h4>}
+        {videoDesc && <p className={classes.galleryDescription}>{videoDesc}</p>}
       </div>
     );
   },

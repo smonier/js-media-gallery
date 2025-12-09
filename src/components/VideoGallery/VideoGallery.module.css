@@ -183,21 +183,6 @@
   color: #666;
 }
 
-.thumbnailActiveIndicator {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 48px;
-  height: 48px;
-  background: rgba(0, 123, 255, 0.9);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-}
-
 .thumbnailTitle {
   display: block;
   margin-top: 0.5rem;
@@ -296,23 +281,27 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: transparent;
-  border: none;
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
   cursor: pointer;
   padding: 0;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  color: var(--primary);
 }
 
 .playButton:hover {
-  transform: translate(-50%, -50%) scale(1.1);
-  opacity: 1;
-}
-
-.playButton svg {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(var(--primary-rgb), 0.5);
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
 }
 
 .videoFallback {
@@ -455,6 +444,9 @@
   cursor: pointer;
   padding: 0;
   text-align: left;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .gridVideoCard:hover {
@@ -497,36 +489,29 @@
   color: #666;
 }
 
-.gridPlayOverlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px;
-  height: 64px;
-  background: rgba(0, 0, 0, 0.7);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    background 0.3s ease,
-    transform 0.3s ease;
-  backdrop-filter: blur(4px);
-}
-
-.gridVideoCard:hover .gridPlayOverlay {
-  background: rgba(0, 0, 0, 0.85);
-  transform: translate(-50%, -50%) scale(1.1);
+.gridVideoCard:hover .playButton {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
 }
 
 .gridVideoTitle {
   font-size: 1.125rem;
   font-weight: 600;
   margin: 0;
-  padding: 1rem;
+  padding: 1rem 1rem 0.5rem 1rem;
   color: #1a1a1a;
   line-height: 1.4;
+}
+
+.gridVideoDescription {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0;
+  padding: 0 1rem 1rem 1rem;
+  line-height: 1.5;
+  flex-grow: 1;
 }
 
 /* Modal */

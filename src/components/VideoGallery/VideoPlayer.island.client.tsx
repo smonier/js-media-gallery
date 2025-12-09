@@ -22,6 +22,9 @@ const getWistiaThumbnail = (videoId: string) =>
 const getDailymotionThumbnail = (videoId: string) =>
   `https://www.dailymotion.com/thumbnail/video/${videoId}`;
 
+const getStorylaneThumbnail = (videoId: string) =>
+  `https://app.storylane.io/share/${videoId}/thumbnail.png`;
+
 // Embed URL generators
 const getYouTubeEmbed = (videoId: string, autoplay: boolean) =>
   `https://www.youtube.com/embed/${videoId}?autoplay=${autoplay ? 1 : 0}&rel=0`;
@@ -34,6 +37,9 @@ const getWistiaEmbed = (videoId: string, autoplay: boolean) =>
 
 const getDailymotionEmbed = (videoId: string, autoplay: boolean) =>
   `https://www.dailymotion.com/embed/video/${videoId}?autoplay=${autoplay ? 1 : 0}`;
+
+const getStorylaneEmbed = (videoId: string, autoplay: boolean) =>
+  `https://app.storylane.io/share/${videoId}${autoplay ? "?autoplay=1" : ""}`;
 
 export default function VideoPlayer({
   video,
@@ -67,6 +73,9 @@ export default function VideoPlayer({
             break;
           case "dailymotion":
             setThumbnailUrl(getDailymotionThumbnail(video.videoId));
+            break;
+          case "storylane":
+            setThumbnailUrl(getStorylaneThumbnail(video.videoId));
             break;
         }
       }
@@ -115,6 +124,9 @@ export default function VideoPlayer({
         break;
       case "dailymotion":
         embedUrl = getDailymotionEmbed(video.videoId, isPlaying);
+        break;
+      case "storylane":
+        embedUrl = getStorylaneEmbed(video.videoId, isPlaying);
         break;
     }
 

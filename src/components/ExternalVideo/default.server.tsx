@@ -18,7 +18,7 @@ export default jahiaComponent(
     displayName: "External Video",
   },
   (props: ExternalVideoProps, { renderContext }) => {
-    const { "jcr:title": title, videoService, videoId, videoPoster } = props;
+    const { "jcr:title": title, videoDesc, videoService, videoId, videoPoster } = props;
 
     // CRITICAL: Handle JCR nodes OR plain objects
     let posterUrl = undefined;
@@ -48,6 +48,7 @@ export default jahiaComponent(
         <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
         <div className={classes.root}>
           {title && <h3 className={classes.title}>{title}</h3>}
+          {videoDesc && <p className={classes.description}>{videoDesc}</p>}
           <div className={classes.videoContainer}>
             <Island
               component={ExternalVideoPlayer}
@@ -56,6 +57,7 @@ export default jahiaComponent(
                 videoId,
                 posterUrl,
                 title,
+                videoDesc,
               }}
             >
               <div className={classes.videoFallback}>

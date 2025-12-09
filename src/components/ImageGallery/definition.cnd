@@ -11,7 +11,7 @@
  extends = jsmediagallerynt:imageGallery
  - imagesList (weakreference, picker[type='image']) multiple
 
-[jsmediagallerynt:imageGallery] > jnt:content, mix:title, jsmediagallerymix:component, jmix:list
+[jsmediagallerynt:imageGallery] > jnt:content, mix:title, jsmediagallerymix:component, jmix:list orderable
  - bannerText (string, richtext) internationalized
  - imgGalleryType (string)
 

@@ -3,7 +3,7 @@
 <jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
 <jsmediagallerymix = 'http://modules.se.jahia.org/mediagal/mix/1.0'>
 
-[jsmediagallerynt:videoGallery] > jnt:content, mix:title, jsmediagallerymix:component, jmix:list
+[jsmediagallerynt:videoGallery] > jnt:content, jmix:editorialContent, mix:title, jmix:list, jsmediagallerymix:component orderable
  - bannerText (string, richtext) internationalized
  - itemWidth (long) = 250  mandatory
  + * (jsmediagallerynt:internalVideo)

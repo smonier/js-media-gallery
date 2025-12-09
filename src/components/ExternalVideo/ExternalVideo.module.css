@@ -12,6 +12,13 @@
   color: #1a1a1a;
 }
 
+.description {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
 .videoContainer {
   position: relative;
   width: 100%;
@@ -59,23 +66,27 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background: transparent;
-  border: none;
+  width: 50px;
+  height: 50px;
+  background: var(--primary);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
   cursor: pointer;
   padding: 0;
-  transition:
-    transform 0.2s ease,
-    opacity 0.2s ease;
-  opacity: 0.9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  color: var(--primary);
 }
 
 .playButton:hover {
-  transform: translate(-50%, -50%) scale(1.1);
-  opacity: 1;
-}
-
-.playButton svg {
-  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.3));
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(var(--primary-rgb), 0.5);
+  transform: translate(-50%, -50%) scale(1.15);
+  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
 }
 
 .videoFallback {
@@ -128,6 +139,13 @@
   margin: 1rem;
   color: #1a1a1a;
   line-height: 1.4;
+}
+
+.galleryDescription {
+  font-size: 0.875rem;
+  color: #666;
+  margin: 0 1rem 1rem 1rem;
+  line-height: 1.5;
 }
 
 .videoPlaceholder {
