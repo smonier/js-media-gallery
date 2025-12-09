@@ -1,5 +1,11 @@
 import { useState, useEffect } from "react";
 import classes from "./ExternalVideo.module.css";
+import {
+  getEmbedUrl,
+  getServiceThumbnail,
+  fetchStorylaneThumbnail,
+  loadStorylineScript,
+} from "../../utils/video";
 
 interface ExternalVideoPlayerProps {
   videoService: "youtube" | "vimeo" | "wistia" | "dailymotion" | "storylane";
@@ -8,68 +14,6 @@ interface ExternalVideoPlayerProps {
   title?: string;
   videoDesc?: string;
 }
-
-// Helper function to extract first frame from GIF
-const extractFirstFrameFromGif = async (gifUrl: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(URL.createObjectURL(blob));
-            } else {
-              reject(new Error("Failed to create blob"));
-            }
-          },
-          "image/jpeg",
-          0.95,
-        );
-      } else {
-        reject(new Error("Failed to get canvas context"));
-      }
-    };
-
-    img.onerror = () => {
-      // If extraction fails, return original URL
-      resolve(gifUrl);
-    };
-
-    img.src = gifUrl;
-  });
-};
-
-// Embed URL generators
-const getYouTubeEmbed = (videoId: string) => `https://www.youtube.com/embed/${videoId}?rel=0`;
-
-const getVimeoEmbed = (videoId: string) => `https://player.vimeo.com/video/${videoId}`;
-
-const getWistiaEmbed = (videoId: string) => `https://fast.wistia.net/embed/iframe/${videoId}`;
-
-const getDailymotionEmbed = (videoId: string) =>
-  `https://www.dailymotion.com/embed/video/${videoId}`;
-
-const getStorylaneEmbed = (videoId: string) =>
-  `https://jahia.storylane.io/demo/${videoId}?embed=inline`;
-
-// Thumbnail generators
-const getYouTubeThumbnail = (videoId: string) =>
-  `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`;
-
-const getWistiaThumbnail = (videoId: string) =>
-  `https://fast.wistia.com/embed/medias/${videoId}/swatch`;
-
-const getDailymotionThumbnail = (videoId: string) =>
-  `https://www.dailymotion.com/thumbnail/video/${videoId}`;
 
 export default function ExternalVideoPlayer({
   videoService,
@@ -154,7 +98,7 @@ export default function ExternalVideoPlayer({
             <iframe
               allowfullscreen
               loading="lazy"
-              src="${getStorylaneEmbed(videoId)}"
+              src="${getEmbedUrl("storylane", videoId)}"
               name="sl-embed"
               allow="fullscreen"
               title="${title || "Storylane Demo"}"
@@ -218,70 +162,37 @@ export default function ExternalVideoPlayer({
     }
 
     // Auto-fetch service thumbnails
-    switch (videoService) {
-      case "youtube":
-        setThumbnailUrl(getYouTubeThumbnail(videoId));
-        break;
-      case "wistia":
-        setThumbnailUrl(getWistiaThumbnail(videoId));
-        break;
-      case "dailymotion":
-        setThumbnailUrl(getDailymotionThumbnail(videoId));
-        break;
-      case "storylane":
-        // Storylane requires oEmbed API call
-        fetch(
-          `https://api.storylane.io/oembed/meta?url=https://jahia.storylane.io/share/${videoId}`,
-        )
-          .then((res) => res.json())
-          .then(async (data) => {
-            if (data?.thumbnail_url) {
-              // Extract first frame from the animated GIF
-              try {
-                const firstFrame = await extractFirstFrameFromGif(data.thumbnail_url);
-                setThumbnailUrl(firstFrame);
-              } catch (error) {
-                // Fallback to original GIF if extraction fails
-                setThumbnailUrl(data.thumbnail_url);
-              }
-            }
-          })
-          .catch(() => {
-            // Fallback if API fails
-          });
-        break;
-      case "vimeo":
-        // Vimeo requires API call
-        fetch(`https://vimeo.com/api/v2/video/${videoId}.json`)
-          .then((res) => res.json())
-          .then((data) => {
-            if (data[0]?.thumbnail_large) {
-              setThumbnailUrl(data[0].thumbnail_large);
-            }
-          })
-          .catch(() => {
-            // Fallback if API fails
-          });
-        break;
+    const serviceThumbnail = getServiceThumbnail(videoService, videoId);
+
+    if (serviceThumbnail) {
+      setThumbnailUrl(serviceThumbnail);
+    } else if (videoService === "storylane") {
+      // Storylane requires oEmbed API call
+      fetchStorylaneThumbnail(videoId)
+        .then((thumbnail) => {
+          if (thumbnail) {
+            setThumbnailUrl(thumbnail);
+          }
+        })
+        .catch(() => {
+          // Fallback if API fails
+        });
+    } else if (videoService === "vimeo") {
+      // Vimeo requires API call
+      fetch(`https://vimeo.com/api/v2/video/${videoId}.json`)
+        .then((res) => res.json())
+        .then((data) => {
+          if (data[0]?.thumbnail_large) {
+            setThumbnailUrl(data[0].thumbnail_large);
+          }
+        })
+        .catch(() => {
+          // Fallback if API fails
+        });
     }
   }, [videoService, videoId, posterUrl]);
 
-  const getEmbedUrl = () => {
-    switch (videoService) {
-      case "youtube":
-        return getYouTubeEmbed(videoId);
-      case "vimeo":
-        return getVimeoEmbed(videoId);
-      case "wistia":
-        return getWistiaEmbed(videoId);
-      case "dailymotion":
-        return getDailymotionEmbed(videoId);
-      case "storylane":
-        return getStorylaneEmbed(videoId);
-      default:
-        return "";
-    }
-  };
+  const embedUrl = getEmbedUrl(videoService, videoId);
 
   const handlePlay = () => {
     // For Storylane, open fullscreen modal instead of inline
@@ -333,7 +244,7 @@ export default function ExternalVideoPlayer({
       {!showThumbnail && !showModal && (
         <div className={classes.videoPlayer}>
           <iframe
-            src={getEmbedUrl()}
+            src={embedUrl}
             className={classes.videoIframe}
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen

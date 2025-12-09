@@ -1,5 +1,6 @@
 import { useState } from "react";
 import classes from "./VideoGallery.module.css";
+import { getEmbedUrl, getServiceThumbnail } from "../../utils/video";
 
 interface VideoData {
   id: string;
@@ -42,46 +43,6 @@ export default function FeaturedGallery({ videos }: FeaturedGalleryProps) {
 
   const activeVideo = videos[activeIndex];
 
-  const getEmbedUrl = (service?: string, videoId?: string) => {
-    if (!service || !videoId) return "";
-
-    switch (service.toLowerCase()) {
-      case "youtube":
-        return `https://www.youtube.com/embed/${videoId}?rel=0`;
-      case "vimeo":
-        return `https://player.vimeo.com/video/${videoId}`;
-      case "wistia":
-        return `https://fast.wistia.net/embed/iframe/${videoId}`;
-      case "dailymotion":
-        return `https://www.dailymotion.com/embed/video/${videoId}`;
-      case "storylane":
-        return `https://app.storylane.io/share/${videoId}`;
-      default:
-        return "";
-    }
-  };
-
-  const getServiceThumbnail = (service?: string, videoId?: string) => {
-    if (!service || !videoId) return undefined;
-
-    switch (service.toLowerCase()) {
-      case "youtube":
-        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      case "vimeo":
-        // Vimeo requires API call for thumbnail, we'll use a placeholder
-        return undefined;
-      case "wistia":
-        // Use Wistia's swatch endpoint - same as grid view
-        return `https://fast.wistia.com/embed/medias/${videoId}/swatch`;
-      case "dailymotion":
-        return `https://www.dailymotion.com/thumbnail/video/${videoId}`;
-      case "storylane":
-        return `https://app.storylane.io/share/${videoId}/thumbnail.png`;
-      default:
-        return undefined;
-    }
-  };
-
   // Get thumbnail URL with priority: custom poster > service thumbnail > placeholder
   const getThumbnailUrl = (video: VideoData) => {
     if (video.posterUrl) {
@@ -106,7 +67,7 @@ export default function FeaturedGallery({ videos }: FeaturedGalleryProps) {
           {activeVideo.isExternal ? (
             <iframe
               className={classes.videoIframe}
-              src={getEmbedUrl(activeVideo.videoService, activeVideo.videoId)}
+              src={getEmbedUrl(activeVideo.videoService || "", activeVideo.videoId || "")}
               title={activeVideo.title || "Video"}
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowFullScreen

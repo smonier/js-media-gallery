@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import classes from "./VideoGallery.module.css";
+import { getEmbedUrl, getServiceThumbnail, fetchStorylaneThumbnail } from "../../utils/video";
 
 interface VideoData {
   id: string;
@@ -16,45 +17,6 @@ interface VideoModalProps {
   videos: VideoData[];
 }
 
-// Helper function to extract first frame from GIF
-const extractFirstFrameFromGif = async (gifUrl: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-
-    img.onload = () => {
-      const canvas = document.createElement("canvas");
-      canvas.width = img.width;
-      canvas.height = img.height;
-      const ctx = canvas.getContext("2d");
-
-      if (ctx) {
-        ctx.drawImage(img, 0, 0);
-        canvas.toBlob(
-          (blob) => {
-            if (blob) {
-              resolve(URL.createObjectURL(blob));
-            } else {
-              reject(new Error("Failed to create blob"));
-            }
-          },
-          "image/jpeg",
-          0.95,
-        );
-      } else {
-        reject(new Error("Failed to get canvas context"));
-      }
-    };
-
-    img.onerror = () => {
-      // If extraction fails, return original URL
-      resolve(gifUrl);
-    };
-
-    img.src = gifUrl;
-  });
-};
-
 export default function VideoModal({ videos }: VideoModalProps) {
   const [selectedVideo, setSelectedVideo] = useState<VideoData | null>(null);
   const [storylaneThumbnails, setStorylaneThumbnails] = useState<Record<string, string>>({});
@@ -67,26 +29,13 @@ export default function VideoModal({ videos }: VideoModalProps) {
 
     storylaneVideos.forEach((video) => {
       if (video.videoId && !storylaneThumbnails[video.videoId]) {
-        fetch(
-          `https://api.storylane.io/oembed/meta?url=https://jahia.storylane.io/share/${video.videoId}`,
-        )
-          .then((res) => res.json())
-          .then(async (data) => {
-            if (data?.thumbnail_url) {
-              // Extract first frame from the animated GIF
-              try {
-                const firstFrame = await extractFirstFrameFromGif(data.thumbnail_url);
-                setStorylaneThumbnails((prev) => ({
-                  ...prev,
-                  [video.videoId!]: firstFrame,
-                }));
-              } catch (error) {
-                // Fallback to original GIF if extraction fails
-                setStorylaneThumbnails((prev) => ({
-                  ...prev,
-                  [video.videoId!]: data.thumbnail_url,
-                }));
-              }
+        fetchStorylaneThumbnail(video.videoId)
+          .then((thumbnail) => {
+            if (thumbnail) {
+              setStorylaneThumbnails((prev) => ({
+                ...prev,
+                [video.videoId!]: thumbnail,
+              }));
             }
           })
           .catch(() => {
@@ -99,23 +48,7 @@ export default function VideoModal({ videos }: VideoModalProps) {
   // Dynamically load Storylane script when needed
   useEffect(() => {
     if (selectedVideo?.isExternal && selectedVideo?.videoService?.toLowerCase() === "storylane") {
-      // Check if script is already loaded
-      const existingScript = document.querySelector(
-        'script[src="https://js.storylane.io/js/v2/storylane.js"]',
-      );
-
-      if (existingScript) {
-        return;
-      }
-
-      const script = document.createElement("script");
-      script.src = "https://js.storylane.io/js/v2/storylane.js";
-      script.async = true;
-      document.body.appendChild(script);
-
-      return () => {
-        // Don't remove the script to avoid reloading
-      };
+      loadStorylineScript();
     }
   }, [selectedVideo]);
 
@@ -216,38 +149,6 @@ export default function VideoModal({ videos }: VideoModalProps) {
     }
   }, [selectedVideo]);
 
-  const getEmbedUrl = (service: string, videoId: string) => {
-    switch (service.toLowerCase()) {
-      case "youtube":
-        return `https://www.youtube.com/embed/${videoId}?autoplay=1`;
-      case "vimeo":
-        return `https://player.vimeo.com/video/${videoId}?autoplay=1`;
-      case "dailymotion":
-        return `https://www.dailymotion.com/embed/video/${videoId}?autoplay=1`;
-      case "wistia":
-        return `https://fast.wistia.net/embed/iframe/${videoId}?autoplay=1`;
-      case "storylane":
-        return `https://jahia.storylane.io/demo/${videoId}?embed=inline`;
-      default:
-        return "";
-    }
-  };
-
-  const getServiceThumbnail = (service?: string, videoId?: string) => {
-    if (!service || !videoId) return undefined;
-
-    switch (service.toLowerCase()) {
-      case "youtube":
-        return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-      case "wistia":
-        return `https://fast.wistia.com/embed/medias/${videoId}/swatch`;
-      case "dailymotion":
-        return `https://www.dailymotion.com/thumbnail/video/${videoId}`;
-      default:
-        return undefined;
-    }
-  };
-
   const getThumbnailUrl = (video: VideoData) => {
     if (video.posterUrl) return video.posterUrl;
     if (video.isExternal) {
@@ -289,16 +190,16 @@ export default function VideoModal({ videos }: VideoModalProps) {
                   />
                 ) : (
                   <div className={classes.gridPlaceholder}>
-                                  <svg
-                width="32"
-                height="32"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.95" />
-                <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" />
-              </svg>
+                    <svg
+                      width="32"
+                      height="32"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.95" />
+                      <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" />
+                    </svg>
                   </div>
                 )}
                 <div className={classes.playButton}>
@@ -352,7 +253,9 @@ export default function VideoModal({ videos }: VideoModalProps) {
               {selectedVideo.isExternal ? (
                 <iframe
                   className={classes.modalVideo}
-                  src={getEmbedUrl(selectedVideo.videoService!, selectedVideo.videoId!)}
+                  src={getEmbedUrl(selectedVideo.videoService!, selectedVideo.videoId!, {
+                    autoplay: true,
+                  })}
                   title={selectedVideo.title || "Video"}
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
