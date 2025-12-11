@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import classes from "./VideoGallery.module.css";
-import { getEmbedUrl, getServiceThumbnail, fetchStorylaneThumbnail, loadStorylineScript } from "../../utils/video";
+import {
+  getEmbedUrl,
+  getServiceThumbnail,
+  fetchStorylaneThumbnail,
+  loadStorylineScript,
+} from "../../utils/video";
 
 interface VideoData {
   id: string;
