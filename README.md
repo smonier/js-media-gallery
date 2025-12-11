@@ -12,19 +12,23 @@ A comprehensive, modern media gallery module featuring image galleries and video
 ## ✨ Features
 
 ### Image Gallery
+
 - Grid, Masonry, and Carousel views
 - Directory or manual image selection
 - Responsive design with smooth animations
 
 ### Video Gallery
+
 - Featured + Grid and Grid views
-- Support for YouTube, Vimeo, Wistia, Dailymotion
+- Support for YouTube, Vimeo, Wistia, Dailymotion, Storylane
 - Internal video hosting
-- Auto-thumbnail extraction
+- Auto-thumbnail extraction with first-frame GIF processing
 
 ### Video Hero Banner
-- Full-screen video background
+
+- Large video background (70% viewport height)
 - Overlay text with CTA button
+- Centered video with responsive design
 - Perfect for landing pages
 
 ## 🚀 Quick Start
@@ -57,13 +61,14 @@ See [QUICK_START.md](./QUICK_START.md) for detailed setup instructions.
 ```
 src/components/
 ├── ImageGallery/          # Grid, Masonry, Carousel views
-├── VideoGallery/          # Featured + Grid, Grid views  
+├── VideoGallery/          # Featured + Grid, Grid views
 ├── InternalVideo/         # Hosted video player
-├── ExternalVideo/         # YouTube, Vimeo, Wistia, Dailymotion
+├── ExternalVideo/         # YouTube, Vimeo, Wistia, Dailymotion, Storylane
 └── VideoHeading/          # Video hero banner
 ```
 
 Each component follows Jahia JavaScript Module best practices with:
+
 - Component-level `definition.cnd`
 - Server views (`.server.tsx`)
 - Client islands (`.island.client.tsx`)
