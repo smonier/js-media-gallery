@@ -18,9 +18,10 @@ const DELAY_MS = 5000;
 /**
  * Image carousel (RGAA 13.8 and the WAI-ARIA carousel pattern):
  * - it rotates only when the visitor has not asked for reduced motion, and a visible button
- *   pauses and restarts it; hovering or focusing the carousel pauses it too;
- * - previous, next and the slide picker are named buttons; the slide shown is announced when the
- *   visitor changes it (not while it rotates);
+ *   pauses and restarts it; the pointer or the keyboard focus entering the carousel pauses it too,
+ *   until it leaves or the visitor presses the play button;
+ * - previous, next and the slide picker are named buttons; the slide shown is announced whenever
+ *   the carousel is not rotating, so a change made by the visitor is read (WAI-ARIA carousel);
  * - before hydration, without JavaScript and in edit mode, the slides are a scrollable strip.
  */
 export default function CarouselClient({ images, title, flat = false }: CarouselClientProps) {
@@ -28,8 +29,7 @@ export default function CarouselClient({ images, title, flat = false }: Carousel
   const [enhanced, setEnhanced] = useState(false);
   const [current, setCurrent] = useState(0);
   const [playing, setPlaying] = useState(false);
-  const [paused, setPaused] = useState(false); // hover or focus inside
-  const [announce, setAnnounce] = useState(false);
+  const [paused, setPaused] = useState(false); // pointer or focus inside
   const root = useRef<HTMLElement>(null);
   const total = images.length;
 
@@ -51,8 +51,16 @@ export default function CarouselClient({ images, title, flat = false }: Carousel
   const goTo = (index: number) => {
     setCurrent((index + total) % total);
     setPlaying(false);
-    setAnnounce(true);
   };
+
+  /** The play button: playing again overrides the pause of the pointer or the focus inside. */
+  const togglePlaying = () => {
+    if (!playing) setPaused(false);
+    setPlaying(!playing);
+  };
+
+  /** Rotating: the slide changes are not announced (they would interrupt the visitor). */
+  const rotating = playing && !paused;
 
   const label = title || t("mediaGallery.carousel.label");
 
@@ -97,7 +105,11 @@ export default function CarouselClient({ images, title, flat = false }: Carousel
       aria-label={label}
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
-      onFocus={() => setPaused(true)}
+      onFocus={(event) => {
+        // Only when the focus enters from outside: moving between the carousel's own buttons
+        // keeps the state the visitor chose with the play button.
+        if (!root.current?.contains(event.relatedTarget as Node | null)) setPaused(true);
+      }}
       onBlur={(event) => {
         if (!root.current?.contains(event.relatedTarget as Node | null)) setPaused(false);
       }}
@@ -107,7 +119,7 @@ export default function CarouselClient({ images, title, flat = false }: Carousel
           <button
             type="button"
             className={`${ui.control} ${classes.carouselPlay}`}
-            onClick={() => setPlaying((value) => !value)}
+            onClick={togglePlaying}
           >
             {playing ? <PauseIcon /> : <PlayIcon />}
             <span>
@@ -116,7 +128,7 @@ export default function CarouselClient({ images, title, flat = false }: Carousel
           </button>
         </div>
       )}
-      <div className={classes.carouselMain} aria-live={announce && !playing ? "polite" : "off"}>
+      <div className={classes.carouselMain} aria-live={rotating ? "off" : "polite"}>
         {images.map((image, index) => (
           <div
             key={`${image.url}-${index}`}

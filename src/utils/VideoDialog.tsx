@@ -10,15 +10,17 @@ interface VideoDialogProps {
   /** The video to play, or undefined when the dialog is closed. */
   video?: VideoData;
   onClose: () => void;
+  /** The control that opened the dialog, which gets the focus back when it closes. */
+  opener?: HTMLElement | null;
 }
 
 /** A player in a modal dialog, opened by a visitor's click (so it may start playing). */
-export default function VideoDialog({ video, onClose }: VideoDialogProps) {
+export default function VideoDialog({ video, onClose, opener }: VideoDialogProps) {
   const { t } = useTranslation("js-media-gallery");
   const titleId = useId();
   const isDemo = video?.videoService === "storylane";
   return (
-    <ModalDialog open={Boolean(video)} onClose={onClose} labelledBy={titleId}>
+    <ModalDialog open={Boolean(video)} onClose={onClose} labelledBy={titleId} opener={opener}>
       {video && (
         <div className={`${ui.dialogPanel} ${isDemo ? ui.dialogWide : ""}`}>
           <div className={ui.dialogHeader}>

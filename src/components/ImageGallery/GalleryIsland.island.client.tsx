@@ -10,33 +10,35 @@ interface GalleryIslandProps {
   title?: string;
 }
 
-/** Thumbnails shown next to the main image, by screen width. */
-const thumbnailCount = () => (window.innerWidth >= 1200 ? 4 : window.innerWidth >= 768 ? 2 : 1);
+/** Thumbnails shown under the main image; the others are reached with the "more" button. */
+const THUMBNAILS = 4;
 
 /**
  * A main image with a row of thumbnails. A thumbnail shows its image as the main one; the main
- * image is a link to the full-size file (no JavaScript needed) that opens the viewer.
+ * image is a link to the full-size file (no JavaScript needed) that opens the viewer. The same
+ * thumbnails are rendered on the server and in the browser, so hydration changes nothing on
+ * screen; the row wraps on narrow screens (CSS). Only the "more" button, which needs JavaScript,
+ * appears after hydration.
  */
 export default function GalleryIsland({ images, title }: GalleryIslandProps) {
   const { t } = useTranslation("js-media-gallery");
   const [current, setCurrent] = useState(0);
   const [viewer, setViewer] = useState<number | null>(null);
-  const [count, setCount] = useState(4);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
   const [hydrated, setHydrated] = useState(false);
   const total = images.length;
 
-  useEffect(() => {
-    setHydrated(true);
-    const update = () => setCount(thumbnailCount());
-    update();
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, []);
+  useEffect(() => setHydrated(true), []);
+
+  const open = (index: number, element: HTMLElement) => {
+    setOpener(element);
+    setViewer(index);
+  };
 
   const main = images[current] ?? images[0];
   if (!main) return null;
   // One slot per thumbnail, plus one for "more" when some images are left out.
-  const shown = total > count + 1 ? images.slice(0, count) : images;
+  const shown = total > THUMBNAILS + 1 ? images.slice(0, THUMBNAILS) : images;
   const hidden = total - shown.length;
 
   return (
@@ -48,7 +50,7 @@ export default function GalleryIsland({ images, title }: GalleryIslandProps) {
             className={`${ui.control} ${classes.galleryMainLink}`}
             onClick={(event) => {
               event.preventDefault();
-              setViewer(current);
+              open(current, event.currentTarget);
             }}
           >
             <img
@@ -63,11 +65,7 @@ export default function GalleryIsland({ images, title }: GalleryIslandProps) {
         {total > 1 && (
           <ul className={classes.galleryThumbnails}>
             {shown.map((image, index) => (
-              <li
-                key={`${image.url}-${index}`}
-                className={`${classes.galleryThumb} ${hydrated ? classes.galleryThumbFadeIn : ""}`}
-                style={hydrated ? { animationDelay: `${index * 120}ms` } : undefined}
-              >
+              <li key={`${image.url}-${index}`} className={classes.galleryThumb}>
                 <button
                   type="button"
                   className={`${ui.control} ${classes.galleryThumbButton}`}
@@ -87,7 +85,7 @@ export default function GalleryIsland({ images, title }: GalleryIslandProps) {
                 <button
                   type="button"
                   className={`${ui.control} ${classes.galleryThumbButton} ${classes.galleryThumbMore}`}
-                  onClick={() => setViewer(shown.length)}
+                  onClick={(event) => open(shown.length, event.currentTarget)}
                 >
                   <span className={classes.galleryMoreCount} aria-hidden="true">
                     +{hidden}
@@ -108,6 +106,7 @@ export default function GalleryIsland({ images, title }: GalleryIslandProps) {
         onIndexChange={setViewer}
         onClose={() => setViewer(null)}
         title={title}
+        opener={opener}
       />
     </>
   );

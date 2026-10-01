@@ -17,7 +17,7 @@ interface VideoModalProps {
 interface VideoCardProps {
   video: VideoData;
   headingLevel: number;
-  onOpen: () => void;
+  onOpen: (opener: HTMLElement) => void;
 }
 
 function VideoCard({ video, headingLevel, onOpen }: VideoCardProps) {
@@ -37,7 +37,7 @@ function VideoCard({ video, headingLevel, onOpen }: VideoCardProps) {
         className={`${ui.control} ${classes.thumbLink}`}
         onClick={(event) => {
           event.preventDefault();
-          onOpen();
+          onOpen(event.currentTarget);
         }}
       >
         <span className={classes.thumbFrame}>
@@ -61,6 +61,7 @@ function VideoCard({ video, headingLevel, onOpen }: VideoCardProps) {
 /** Grid of video cards; a card opens its video in a modal player. */
 export default function VideoModal({ videos, headingLevel }: VideoModalProps) {
   const [selected, setSelected] = useState<VideoData | undefined>(undefined);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
   return (
     <>
       <ul className={classes.videoGrid}>
@@ -69,11 +70,14 @@ export default function VideoModal({ videos, headingLevel }: VideoModalProps) {
             key={video.id}
             video={video}
             headingLevel={headingLevel}
-            onOpen={() => setSelected(video)}
+            onOpen={(element) => {
+              setOpener(element);
+              setSelected(video);
+            }}
           />
         ))}
       </ul>
-      <VideoDialog video={selected} onClose={() => setSelected(undefined)} />
+      <VideoDialog video={selected} onClose={() => setSelected(undefined)} opener={opener} />
     </>
   );
 }

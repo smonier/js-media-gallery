@@ -40,6 +40,7 @@ const LAYOUTS = {
 export default function ImageModal({ images, layout, title }: ImageModalProps) {
   const { t } = useTranslation("js-media-gallery");
   const [selected, setSelected] = useState<number | null>(null);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
   const [spans, setSpans] = useState<Record<number, number>>({});
   const styles = LAYOUTS[layout] ?? LAYOUTS.default;
   const total = images.length;
@@ -69,6 +70,7 @@ export default function ImageModal({ images, layout, title }: ImageModalProps) {
                   className={`${ui.control} ${classes.imageLink}`}
                   onClick={(event) => {
                     event.preventDefault();
+                    setOpener(event.currentTarget);
                     setSelected(index);
                   }}
                 >
@@ -111,6 +113,7 @@ export default function ImageModal({ images, layout, title }: ImageModalProps) {
         onIndexChange={setSelected}
         onClose={() => setSelected(null)}
         title={title}
+        opener={opener}
       />
     </>
   );

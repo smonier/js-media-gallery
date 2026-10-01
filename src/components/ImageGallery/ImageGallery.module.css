@@ -357,9 +357,15 @@
   }
 }
 
+/* Narrow screens: the thumbnails wrap, three to a row. */
 @media (max-width: 767px) {
+  .galleryThumbnails {
+    gap: 0.5rem;
+  }
+
   .galleryThumb {
-    max-width: calc((100% - 1rem) / 2);
+    flex-basis: calc((100% - 1rem) / 3);
+    max-width: calc((100% - 1rem) / 3);
   }
 }
 

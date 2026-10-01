@@ -13,6 +13,7 @@ interface HeroVideoProps {
 /**
  * Muted background video of the hero (RGAA 4.10 and 13.8): it starts only when JavaScript runs and
  * the visitor has not asked for reduced motion, and a visible button pauses and restarts it.
+ * The button follows the video's own play and pause events, so it always tells its real state.
  * The video is decorative: the hero's text carries the information.
  */
 export default function HeroVideo({ src, mimeType, posterUrl }: HeroVideoProps) {
@@ -24,26 +25,18 @@ export default function HeroVideo({ src, mimeType, posterUrl }: HeroVideoProps) 
   useEffect(() => {
     setReady(true);
     const element = video.current;
-    if (!element || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!element) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     element.muted = true;
-    element.play().then(
-      () => setPlaying(true),
-      () => setPlaying(false),
-    );
+    // A refused start leaves the video paused; its state is read from the events below.
+    element.play().catch(() => undefined);
   }, []);
 
   const toggle = () => {
     const element = video.current;
     if (!element) return;
-    if (playing) {
-      element.pause();
-      setPlaying(false);
-    } else {
-      element.play().then(
-        () => setPlaying(true),
-        () => setPlaying(false),
-      );
-    }
+    if (element.paused) element.play().catch(() => undefined);
+    else element.pause();
   };
 
   return (
@@ -58,6 +51,8 @@ export default function HeroVideo({ src, mimeType, posterUrl }: HeroVideoProps) 
         poster={posterUrl}
         aria-hidden="true"
         tabIndex={-1}
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
       >
         <source src={src} type={mimeType} />
       </video>

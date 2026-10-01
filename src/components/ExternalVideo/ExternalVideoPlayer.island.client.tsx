@@ -22,6 +22,7 @@ export default function ExternalVideoPlayer({ video }: ExternalVideoPlayerProps)
   const { t } = useTranslation("js-media-gallery");
   const [playing, setPlaying] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
   const thumbnail = useThumbnail(video);
   const isDemo = video.videoService === "storylane";
   const title = video.title || t("mediaGallery.video.untitled");
@@ -41,8 +42,10 @@ export default function ExternalVideoPlayer({ video }: ExternalVideoPlayerProps)
         className={`${ui.control} ${classes.preview}`}
         onClick={(event) => {
           event.preventDefault();
-          if (isDemo) setDialogOpen(true);
-          else setPlaying(true);
+          if (isDemo) {
+            setOpener(event.currentTarget);
+            setDialogOpen(true);
+          } else setPlaying(true);
         }}
       >
         {thumbnail && <img src={thumbnail} alt="" className={classes.thumbnailImage} />}
@@ -56,7 +59,11 @@ export default function ExternalVideoPlayer({ video }: ExternalVideoPlayerProps)
         </span>
       </a>
       {isDemo && (
-        <VideoDialog video={dialogOpen ? video : undefined} onClose={() => setDialogOpen(false)} />
+        <VideoDialog
+          video={dialogOpen ? video : undefined}
+          onClose={() => setDialogOpen(false)}
+          opener={opener}
+        />
       )}
     </>
   );

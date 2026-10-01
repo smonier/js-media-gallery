@@ -8,6 +8,12 @@ interface ModalDialogProps {
   labelledBy?: string;
   /** Accessible name when the dialog has no visible heading. */
   label?: string;
+  /**
+   * The control that opened the dialog, which gets the focus back when it closes. Safari and
+   * Firefox on macOS do not focus a link or a button on a click, so the focused element is only
+   * the fallback.
+   */
+  opener?: HTMLElement | null;
   className?: string;
   children: ReactNode;
 }
@@ -19,7 +25,8 @@ const FOCUSABLE =
  * Modal dialog built on the native <dialog> element (RGAA 7.1, 12.9 and 12.10):
  * - opened with showModal(), so the rest of the page is inert and focus moves into the dialog;
  * - Tab and Shift+Tab stay inside the dialog (focus guards at both ends);
- * - Escape, the close control of the caller and a click on the backdrop close it;
+ * - Escape, the close control of the caller and a click on the backdrop close it; a press that
+ *   starts or ends inside the dialog (a text selection, a drag) does not;
  * - focus goes back to the control that opened it.
  * The content is rendered only while the dialog is open (players stop when it closes).
  */
@@ -28,11 +35,16 @@ export default function ModalDialog({
   onClose,
   labelledBy,
   label,
+  opener: trigger,
   className,
   children,
 }: ModalDialogProps) {
   const ref = useRef<HTMLDialogElement>(null);
   const opener = useRef<HTMLElement | null>(null);
+  const triggerRef = useRef(trigger);
+  triggerRef.current = trigger;
+  /** Where the current press started and ended: true when on the backdrop. */
+  const press = useRef({ down: false, up: false });
   const opening = useRef(false);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
@@ -41,8 +53,10 @@ export default function ModalDialog({
     const dialog = ref.current;
     if (!dialog) return;
     if (open && !dialog.open) {
+      const focused = document.activeElement;
       opener.current =
-        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+        triggerRef.current ??
+        (focused instanceof HTMLElement && focused !== document.body ? focused : null);
       opening.current = true;
       if (typeof dialog.showModal === "function") dialog.showModal();
       else dialog.setAttribute("open", "");
@@ -99,8 +113,16 @@ export default function ModalDialog({
         event.preventDefault();
         onCloseRef.current();
       }}
+      onPointerDown={(event) => {
+        press.current = { down: event.target === ref.current, up: false };
+      }}
+      onPointerUp={(event) => {
+        press.current.up = event.target === ref.current;
+      }}
       onClick={(event) => {
-        if (event.target === ref.current) onCloseRef.current();
+        const { down, up } = press.current;
+        press.current = { down: false, up: false };
+        if (down && up && event.target === ref.current) onCloseRef.current();
       }}
     >
       {open && (

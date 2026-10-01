@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useEffect, useId } from "react";
 import { useTranslation } from "react-i18next";
 import ModalDialog from "../../utils/ModalDialog.js";
 import { CloseIcon, NextIcon, PreviousIcon } from "../../utils/icons.js";
@@ -14,6 +14,8 @@ interface ImageViewerProps {
   onClose: () => void;
   /** Gallery title, used as the dialog's name. */
   title?: string;
+  /** The control that opened the viewer, which gets the focus back when it closes. */
+  opener?: HTMLElement | null;
 }
 
 /** Text alternative of an image: its title, or its position when it has none. */
@@ -24,13 +26,18 @@ export const imageAlt = (
   t: (key: string, options?: Record<string, unknown>) => string,
 ) => image.title || t("mediaGallery.image.untitled", { index: index + 1, total });
 
-/** Full-size image viewer in a modal dialog, with previous / next and the arrow keys. */
+/**
+ * Full-size image viewer in a modal dialog, with previous / next and the arrow keys. The keys are
+ * read on the document while the viewer is open, so they keep working wherever the focus is (a
+ * click on the image leaves it on no control).
+ */
 export default function ImageViewer({
   images,
   index,
   onIndexChange,
   onClose,
   title,
+  opener,
 }: ImageViewerProps) {
   const { t } = useTranslation("js-media-gallery");
   const titleId = useId();
@@ -40,17 +47,23 @@ export default function ImageViewer({
     if (index !== null) onIndexChange((index + step + total) % total);
   };
 
+  useEffect(() => {
+    if (index === null || total < 2) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.altKey || event.ctrlKey || event.metaKey) return;
+      const step = event.key === "ArrowRight" ? 1 : event.key === "ArrowLeft" ? -1 : 0;
+      if (!step) return;
+      event.preventDefault();
+      onIndexChange((index + step + total) % total);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [index, total, onIndexChange]);
+
   return (
-    <ModalDialog open={image !== undefined} onClose={onClose} labelledBy={titleId}>
+    <ModalDialog open={image !== undefined} onClose={onClose} labelledBy={titleId} opener={opener}>
       {image && index !== null && (
-        <div
-          className={`${ui.dialogPanel} ${classes.viewer}`}
-          onKeyDown={(event) => {
-            if (total < 2) return;
-            if (event.key === "ArrowRight") go(1);
-            if (event.key === "ArrowLeft") go(-1);
-          }}
-        >
+        <div className={`${ui.dialogPanel} ${classes.viewer}`}>
           <div className={ui.dialogHeader}>
             <h2 id={titleId} className={ui.dialogTitle}>
               {title || t("mediaGallery.image.viewer")}
