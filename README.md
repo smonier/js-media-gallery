@@ -17,6 +17,7 @@ A Jahia JavaScript module that adds image galleries, video galleries and a video
 - [Development](#development)
 - [Further documentation](#further-documentation)
 - [Changelog](#changelog)
+- [License](#license)
 
 ## Features
 
@@ -451,3 +452,7 @@ Each component folder holds its `definition.cnd`, `types.ts`, `*.server.tsx` vie
 ## Changelog
 
 See [CHANGELOG.md](./CHANGELOG.md).
+
+## License
+
+Released under the [MIT License](LICENSE).

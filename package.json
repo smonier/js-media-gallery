@@ -1,6 +1,7 @@
 {
   "name": "js-media-gallery",
   "version": "1.1.0",
+  "license": "MIT",
   "type": "module",
   "files": [
     "dist",
