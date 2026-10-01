@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { textValues } from "../../utils/i18n.js";
 import VideoDialog from "../../utils/VideoDialog.js";
 import { PlayIcon } from "../../utils/icons.js";
 import useThumbnail from "../../utils/useThumbnail.js";
@@ -27,8 +28,8 @@ function VideoCard({ video, headingLevel, onOpen }: VideoCardProps) {
   const Heading = `h${Math.min(6, Math.max(2, headingLevel))}` as "h3";
   const label =
     video.videoService === "storylane"
-      ? t("mediaGallery.video.openDemo", { title })
-      : t("mediaGallery.video.play", { title });
+      ? t("mediaGallery.video.openDemo", textValues({ title }))
+      : t("mediaGallery.video.play", textValues({ title }));
   return (
     <li className={classes.gridVideoCard}>
       <a

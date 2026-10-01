@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { textValues } from "./i18n.js";
 import { getEmbedUrl, SERVICE_NAMES, type VideoData } from "./video.js";
 import ui from "./ui.module.css";
 
@@ -39,8 +40,11 @@ export default function VideoFrame({
     if (!src) return null;
     const frameTitle =
       video.videoService === "storylane"
-        ? t("mediaGallery.video.demoFrameTitle", { title })
-        : t("mediaGallery.video.frameTitle", { service: SERVICE_NAMES[video.videoService], title });
+        ? t("mediaGallery.video.demoFrameTitle", textValues({ title }))
+        : t(
+            "mediaGallery.video.frameTitle",
+            textValues({ service: SERVICE_NAMES[video.videoService], title }),
+          );
     return (
       <iframe
         ref={frameRef}

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { textValues } from "../../utils/i18n.js";
 import VideoFrame from "../../utils/VideoFrame.js";
 import { PlayIcon } from "../../utils/icons.js";
 import useThumbnail from "../../utils/useThumbnail.js";
@@ -67,7 +68,7 @@ export default function FeaturedGallery({ videos, headingLevel }: FeaturedGaller
         <Heading className={classes.cardTitle}>{title}</Heading>
         {active.description && <p className={classes.cardText}>{active.description}</p>}
         <p className={ui.visuallyHidden} aria-live="polite">
-          {chosen ? t("mediaGallery.video.nowPlaying", { title }) : ""}
+          {chosen ? t("mediaGallery.video.nowPlaying", textValues({ title })) : ""}
         </p>
       </div>
       {videos.length > 1 && (

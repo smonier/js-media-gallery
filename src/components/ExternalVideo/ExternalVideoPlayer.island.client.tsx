@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { textValues } from "../../utils/i18n.js";
 import VideoDialog from "../../utils/VideoDialog.js";
 import VideoFrame from "../../utils/VideoFrame.js";
 import { PlayIcon } from "../../utils/icons.js";
@@ -50,8 +51,8 @@ export default function ExternalVideoPlayer({ video }: ExternalVideoPlayerProps)
         </span>
         <span className={ui.visuallyHidden}>
           {isDemo
-            ? t("mediaGallery.video.openDemo", { title })
-            : t("mediaGallery.video.play", { title })}
+            ? t("mediaGallery.video.openDemo", textValues({ title }))
+            : t("mediaGallery.video.play", textValues({ title }))}
         </span>
       </a>
       {isDemo && (
