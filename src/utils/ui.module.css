@@ -155,6 +155,17 @@
   overflow-wrap: anywhere;
 }
 
+/* Edit mode only: a note for the editor next to the content it is about. */
+.editHint {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--jsmg-color-border);
+  border-radius: var(--jsmg-radius);
+  background: var(--jsmg-color-surface);
+  color: var(--jsmg-color-text);
+  font-size: 0.875rem;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .dialog,
   .dialog::backdrop,

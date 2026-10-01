@@ -87,5 +87,8 @@
       "pause": "Mettre en pause la vidéo d'arrière-plan",
       "play": "Lire la vidéo d'arrière-plan"
     }
+    },
+    "richText": {
+      "imageWithoutAlt": "Une image de ce texte n'a pas d'alternative textuelle : donnez-lui en une dans l'éditeur de texte riche (elle est présentée aux visiteurs comme décorative)."
   }
 }

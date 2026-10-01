@@ -87,5 +87,8 @@
       "pause": "Pause the background video",
       "play": "Play the background video"
     }
+    },
+    "richText": {
+      "imageWithoutAlt": "An image of this text has no text alternative: give it one in the rich-text editor (it is shown to visitors as decorative)."
   }
 }

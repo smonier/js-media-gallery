@@ -1,348 +1,192 @@
+import { FilterXSS, escapeAttrValue } from "xss";
+
 /**
- * Allow-list filter for rich text written by editors (banner text, video captions).
+ * Allow-list filter for rich text written by editors (banner text, hero caption, transcripts).
  *
  * The module never relies on platform-side HTML filtering, which is a site setting. The filter is
- * plain TypeScript with no DOM, so it runs in the server renderer. It reads the input once, left to
- * right, and writes a new document: only the elements and attributes below are written back, and
- * every text and attribute value is escaped again. Input that is not understood becomes text.
+ * pure JavaScript with no DOM, so it runs in the server renderer (GraalJS).
  *
- * Kept: paragraphs, line breaks, emphasis, lists (definition lists too), quotes, code, headings,
- * links, images, simple tables, and the `lang` / `dir` of any element (RGAA 8.7).
- * Dropped with their content: script, style, frames, forms, embedded objects, SVG and MathML.
- * Dropped, content kept: any other element. Link targets and titles are dropped (RGAA 13.2 and
- * 6.1). Link and image addresses keep only http(s), mailto, tel, relative paths, anchors and the
- * Jahia link placeholders that the render chain rewrites.
+ * Kept: editorial markup (paragraphs, lists including definition lists, emphasis, headings, links,
+ * images, figures, data tables with their caption and header associations, quotes, code), and the
+ * `lang` / `dir` of any element (a phrase in another language, RGAA 8.7). Dropped: scripts and
+ * styles with their content, event handlers, inline styles and classes (the theme owns the look),
+ * frames, forms, link targets and titles (a new window must be announced, RGAA 13.2; a title must
+ * repeat the link text, RGAA 6.1), image titles. Link and image addresses keep only http(s),
+ * mailto, tel, relative paths, anchors, and Jahia's internal link placeholders (##cms-context##,
+ * ##doc-context##), which the render chain rewrites after the view.
  *
- * Headings are renumbered from `headingLevel` down, without gaps, so that the block's headings
- * sit under the heading of the component that shows it (RGAA 9.1).
+ * Ids written by editors are prefixed (`jsmg-rt-` by default), with the anchors and table
+ * `headers` that point at them, so they never collide with the page's own ids.
+ *
+ * Headings: the page template owns the only h1, and a block's headings sit under the heading of
+ * the component that shows it. They are renumbered from `headingLevel` down (an h1 or h2 written
+ * by the editor becomes the first level, never above it) and never skip a level (h2 then h4
+ * becomes h3 then h4 under a component h2), so the page outline stays whole (RGAA 9.1).
  */
+const TEXT = ["lang", "dir"];
+const ALLOWED: Record<string, string[]> = Object.fromEntries(
+  Object.entries({
+    p: [],
+    br: [],
+    hr: [],
+    div: [],
+    span: [],
+    strong: [],
+    b: [],
+    em: [],
+    i: [],
+    u: [],
+    s: [],
+    sub: [],
+    sup: [],
+    small: [],
+    mark: [],
+    h1: ["id"],
+    h2: ["id"],
+    h3: ["id"],
+    h4: ["id"],
+    h5: ["id"],
+    h6: ["id"],
+    ul: [],
+    ol: ["start", "reversed"],
+    li: [],
+    dl: [],
+    dt: [],
+    dd: [],
+    blockquote: ["cite"],
+    q: ["cite"],
+    cite: [],
+    abbr: ["title"],
+    a: ["href", "hreflang"],
+    img: ["src", "alt", "width", "height"],
+    figure: [],
+    figcaption: [],
+    table: ["role"],
+    caption: [],
+    thead: [],
+    tbody: [],
+    tfoot: [],
+    tr: [],
+    th: ["scope", "colspan", "rowspan", "id", "headers"],
+    td: ["colspan", "rowspan", "headers"],
+    code: [],
+    pre: [],
+    kbd: [],
+  }).map(([tag, attrs]) => [tag, [...attrs, ...TEXT]]),
+);
 
-const TEXT_ATTRS = ["lang", "dir"];
-const ALLOWED: Record<string, string[]> = {
-  p: [],
-  br: [],
-  hr: [],
-  div: [],
-  span: [],
-  strong: [],
-  b: [],
-  em: [],
-  i: [],
-  u: [],
-  s: [],
-  sub: [],
-  sup: [],
-  small: [],
-  mark: [],
-  h1: [],
-  h2: [],
-  h3: [],
-  h4: [],
-  h5: [],
-  h6: [],
-  ul: [],
-  ol: ["start", "reversed"],
-  li: [],
-  dl: [],
-  dt: [],
-  dd: [],
-  blockquote: ["cite"],
-  q: ["cite"],
-  cite: [],
-  abbr: ["title"],
-  code: [],
-  pre: [],
-  kbd: [],
-  a: ["href", "hreflang"],
-  img: ["src", "alt", "width", "height"],
-  figure: [],
-  figcaption: [],
-  table: [],
-  caption: [],
-  thead: [],
-  tbody: [],
-  tfoot: [],
-  tr: [],
-  th: ["scope", "colspan", "rowspan"],
-  td: ["colspan", "rowspan"],
-};
-const VOID = new Set(["br", "hr", "img"]);
-/** Elements dropped together with everything up to their closing tag. */
-const DROP_WITH_CONTENT = new Set([
-  "script",
-  "style",
-  "template",
-  "iframe",
-  "frame",
-  "frameset",
-  "object",
-  "embed",
-  "applet",
-  "noscript",
-  "noembed",
-  "noframes",
-  "xmp",
-  "textarea",
-  "title",
-  "select",
-  "svg",
-  "math",
-  "head",
-]);
+const SAFE_URL = /^(?:https?:\/\/|mailto:|tel:|\/(?!\/)|#|\.{1,2}\/|##(?:cms|doc)-context##)/i;
+const SAFE_RELATIVE = /^(?!\/\/)[\w\-./?=&%~+]+$/; // "page.html", "files/x.pdf": no scheme, not "//host"
+const LANG = /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i; // BCP 47, loosely: "en", "fr-CA", "zh-Hant"
+const ID = /^[a-z][\w-]{0,63}$/i;
+const PREFIX = /^[a-z][\w-]{0,40}$/i;
+const DEFAULT_PREFIX = "jsmg-rt-";
 
-const LANG = /^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{1,8}){0,4}$/;
-const NUMBER = /^\d{1,4}$/;
-const SCHEME = /^([A-Za-z][A-Za-z0-9+.-]{0,20}):/;
-const SAFE_SCHEMES = new Set(["http", "https", "mailto", "tel"]);
-
-type Token =
-  | { kind: "text"; value: string }
-  | { kind: "open"; name: string; attrs: [string, string][] }
-  | { kind: "close"; name: string };
-
-const escapeText = (value: string) => value.replace(/</g, "&lt;").replace(/>/g, "&gt;");
-
-const escapeAttr = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-const NAMED: Record<string, string> = {
-  amp: "&",
-  lt: "<",
-  gt: ">",
-  quot: '"',
-  apos: "'",
-  nbsp: " ",
+/** True when a link or image address is allowed (see the module comment). */
+export const isSafeRichTextUrl = (value: string): boolean => {
+  const url = value.trim();
+  return SAFE_URL.test(url) || (SAFE_RELATIVE.test(url) && !url.includes(":"));
 };
 
-/** Decodes character references, so that a value is checked as the browser will read it. */
-const decodeEntities = (value: string) =>
-  value.replace(/&(#x[0-9a-fA-F]{1,6}|#\d{1,7}|[a-zA-Z]{2,8});?/g, (match, ref: string) => {
-    if (ref[0] === "#") {
-      const code =
-        ref[1] === "x" || ref[1] === "X" ? parseInt(ref.slice(2), 16) : parseInt(ref.slice(1), 10);
-      return code > 0 && code <= 0x10ffff ? String.fromCodePoint(code) : "";
-    }
-    return NAMED[ref.toLowerCase()] ?? match;
+const attr = (name: string, value: string) => `${name}="${escapeAttrValue(value)}"`;
+
+/** One filter per id prefix (each rich-text block has its own, so two blocks never share an id). */
+const filters = new Map<string, FilterXSS>();
+
+const filterFor = (prefix: string): FilterXSS => {
+  const cached = filters.get(prefix);
+  if (cached) return cached;
+  /** An editor id, prefixed; undefined when it is not a plain identifier. */
+  const prefixed = (id: string) => (ID.test(id) ? `${prefix}${id}` : undefined);
+  const filter = new FilterXSS({
+    whiteList: ALLOWED,
+    stripIgnoreTag: true,
+    stripIgnoreTagBody: ["script", "style", "iframe", "object", "embed", "noscript", "template"],
+    allowCommentTag: false,
+    onTagAttr(tag, name, value, isWhiteAttr) {
+      // Called for every attribute, allowed or not: only allowed ones get past this line. A string
+      // is written as the attribute as is, "" drops it, undefined keeps it with the library's own
+      // escaping. Never return the value unchanged: it has not been escaped yet.
+      if (!isWhiteAttr) return "";
+      if (name === "href" || name === "src" || name === "cite") {
+        if (!isSafeRichTextUrl(value)) return ""; // an empty href would still link to this page
+        const anchor = name === "href" && value.startsWith("#") ? prefixed(value.slice(1)) : null;
+        if (anchor) return attr("href", `#${anchor}`);
+        // Written out here: the library's own address check refuses plain relative paths.
+        return attr(name, value.trim());
+      }
+      // Always written out: the library prints an empty value as a bare `alt`, valid but easy to
+      // misread.
+      if (name === "alt") return attr("alt", value);
+      if (name === "lang" || name === "hreflang") return LANG.test(value) ? attr(name, value) : "";
+      if (name === "dir") return ["ltr", "rtl", "auto"].includes(value) ? attr("dir", value) : "";
+      if (name === "id") {
+        const id = prefixed(value);
+        return id ? attr("id", id) : "";
+      }
+      if (name === "headers") {
+        const ids = value.split(/\s+/).map(prefixed).filter(Boolean);
+        return ids.length > 0 ? attr("headers", ids.join(" ")) : "";
+      }
+      if (name === "role")
+        return tag === "table" && value === "presentation" ? attr("role", value) : "";
+      return undefined;
+    },
   });
-
-/** Returns the address when it is safe to keep, else undefined. */
-const safeUrl = (raw: string): string | undefined => {
-  // Browsers ignore control characters and spaces in a scheme ("java\tscript:"): remove them first.
-  // eslint-disable-next-line no-control-regex
-  const value = decodeEntities(raw).replace(/[\u0000- \u007f-\u009f]/g, "");
-  if (!value) return undefined;
-  if (value.startsWith("##cms-context##") || value.startsWith("##doc-context##")) return value;
-  if (value.startsWith("//")) return undefined;
-  const scheme = SCHEME.exec(value);
-  if (scheme) return SAFE_SCHEMES.has(scheme[1].toLowerCase()) ? value : undefined;
-  // A relative address: nothing before its first "/", "?" or "#" may read as a scheme.
-  const head = value.split(/[/?#]/, 1)[0];
-  return head.includes(":") || head.includes("&") ? undefined : value;
+  if (filters.size < 64) filters.set(prefix, filter);
+  return filter;
 };
 
-const isNameStart = (ch: string) => (ch >= "a" && ch <= "z") || (ch >= "A" && ch <= "Z");
-const isSpace = (ch: string) =>
-  ch === " " || ch === "\n" || ch === "\t" || ch === "\r" || ch === "\f";
+const clamp = (level: number) => Math.min(Math.max(Math.trunc(level) || 2, 2), 6);
 
-/** Splits the input into text, start tags and end tags. One pass, no backtracking. */
-const tokenize = (html: string): Token[] => {
-  const tokens: Token[] = [];
-  const length = html.length;
-  /** Position of the end tag `</name` from `from` on, any letter case; -1 when there is none. */
-  const findEndTag = (name: string, from: number) => {
-    for (let at = html.indexOf("</", from); at !== -1; at = html.indexOf("</", at + 2)) {
-      if (html.slice(at + 2, at + 2 + name.length).toLowerCase() === name) return at;
-    }
-    return -1;
-  };
-  let i = 0;
-  while (i < length) {
-    const lt = html.indexOf("<", i);
-    if (lt === -1) {
-      tokens.push({ kind: "text", value: html.slice(i) });
-      break;
-    }
-    if (lt > i) tokens.push({ kind: "text", value: html.slice(i, lt) });
-    i = lt;
-    if (html.startsWith("<!--", i)) {
-      const end = html.indexOf("-->", i + 4);
-      i = end === -1 ? length : end + 3;
-      continue;
-    }
-    const next = html[i + 1] ?? "";
-    if (next === "!" || next === "?") {
-      const end = html.indexOf(">", i);
-      i = end === -1 ? length : end + 1;
-      continue;
-    }
-    const closing = next === "/";
-    let j = closing ? i + 2 : i + 1;
-    if (!isNameStart(html[j] ?? "")) {
-      tokens.push({ kind: "text", value: "<" });
-      i += 1;
-      continue;
-    }
-    const nameStart = j;
-    while (j < length && /[A-Za-z0-9-]/.test(html[j])) j++;
-    const name = html.slice(nameStart, j).toLowerCase();
-    // Attributes, up to the end of the tag.
-    const attrs: [string, string][] = [];
-    while (j < length && html[j] !== ">") {
-      if (isSpace(html[j]) || html[j] === "/") {
-        j++;
-        continue;
-      }
-      const attrStart = j;
-      while (
-        j < length &&
-        !isSpace(html[j]) &&
-        html[j] !== "=" &&
-        html[j] !== ">" &&
-        html[j] !== "/"
-      )
-        j++;
-      const attrName = html.slice(attrStart, j).toLowerCase();
-      if (attrStart === j) {
-        j++;
-        continue;
-      }
-      while (j < length && isSpace(html[j])) j++;
-      let value = "";
-      if (html[j] === "=") {
-        j++;
-        while (j < length && isSpace(html[j])) j++;
-        const quote = html[j];
-        if (quote === '"' || quote === "'") {
-          const end = html.indexOf(quote, j + 1);
-          const stop = end === -1 ? length : end;
-          value = html.slice(j + 1, stop);
-          j = stop + 1;
-        } else {
-          const valueStart = j;
-          while (j < length && !isSpace(html[j]) && html[j] !== ">") j++;
-          value = html.slice(valueStart, j);
-        }
-      }
-      attrs.push([attrName, value]);
-    }
-    i = j + 1;
-    if (closing) {
-      tokens.push({ kind: "close", name });
-      continue;
-    }
-    if (DROP_WITH_CONTENT.has(name)) {
-      const end = findEndTag(name, i);
-      if (end === -1) break;
-      const close = html.indexOf(">", end);
-      i = close === -1 ? length : close + 1;
-      continue;
-    }
-    tokens.push({ kind: "open", name, attrs });
-  }
-  return tokens;
-};
-
-const cleanAttrs = (name: string, attrs: [string, string][]): string => {
-  const allowed = [...(ALLOWED[name] ?? []), ...TEXT_ATTRS];
-  const out: string[] = [];
-  const seen = new Set<string>();
-  for (const [attr, raw] of attrs) {
-    if (!allowed.includes(attr) || seen.has(attr)) continue;
-    let value: string | undefined = decodeEntities(raw).trim();
-    switch (attr) {
-      case "href":
-      case "src":
-      case "cite":
-        value = safeUrl(raw);
-        break;
-      case "lang":
-      case "hreflang":
-        value = LANG.test(value) ? value : undefined;
-        break;
-      case "dir":
-        value = ["ltr", "rtl", "auto"].includes(value.toLowerCase())
-          ? value.toLowerCase()
-          : undefined;
-        break;
-      case "start":
-      case "colspan":
-      case "rowspan":
-      case "width":
-      case "height":
-        value = NUMBER.test(value) ? value : undefined;
-        break;
-      case "reversed":
-        value = "";
-        break;
-      case "scope":
-        value = ["row", "col", "rowgroup", "colgroup"].includes(value) ? value : undefined;
-        break;
-    }
-    if (value === undefined) continue;
-    seen.add(attr);
-    out.push(value === "" && attr === "reversed" ? " reversed" : ` ${attr}="${escapeAttr(value)}"`);
-  }
-  // An image needs a text alternative: a missing one becomes empty (decorative).
-  if (name === "img" && !seen.has("alt")) out.push(' alt=""');
-  return out.join("");
-};
-
-/** Maps the heading levels used in the block to consecutive levels from `base`. */
-const headingMap = (tokens: Token[], base: number): Map<string, string> => {
-  const used = [
-    ...new Set(
-      tokens
-        .filter(
-          (t): t is Extract<Token, { kind: "open" }> =>
-            t.kind === "open" && /^h[1-6]$/.test(t.name),
-        )
-        .map((t) => t.name),
-    ),
-  ].sort();
-  return new Map(used.map((tag, index) => [tag, `h${Math.min(6, base + index)}`]));
+/**
+ * Renumbers the headings of filtered HTML: the editor's levels are ranked (the highest used
+ * becomes `base`, the next `base + 1`...), then each heading is at most one level below the
+ * previous one. Runs on the filter's own output, so the tag pattern is simple and linear.
+ */
+const renumberHeadings = (html: string, base: number): string => {
+  const used = [...new Set([...html.matchAll(/<h([1-6])[\s>]/g)].map((m) => Number(m[1])))].sort();
+  if (used.length === 0) return html;
+  const rank = new Map(used.map((level, index) => [level, clamp(base + index)]));
+  let previous = clamp(base) - 1;
+  let open = 0;
+  return html.replace(
+    /<(\/?)h([1-6])([\s>])/g,
+    (_match, closing: string, level: string, next: string) => {
+      if (closing) return `</h${open}${next}`;
+      open = Math.min(rank.get(Number(level)) ?? clamp(base), previous + 1);
+      previous = open;
+      return `<h${open}${next}`;
+    },
+  );
 };
 
 export interface SanitizeOptions {
-  /** Level of the first heading of the block (2 to 6). Defaults to 3. */
+  /** Level of the block's first-rank headings: one below the heading that introduces the text. */
   headingLevel?: number;
+  /** Prefix of the editor's ids and of the anchors pointing at them, unique per block on a page. */
+  idPrefix?: string;
 }
 
-/** Returns HTML that keeps only the allowed markup of `html`. */
-export function sanitizeHtml(html: unknown, options: SanitizeOptions = {}): string {
-  if (typeof html !== "string" || !html) return "";
-  const tokens = tokenize(html);
-  const base = Math.min(6, Math.max(2, Math.trunc(options.headingLevel ?? 3)));
-  const headings = headingMap(tokens, base);
-  const stack: string[] = [];
-  let out = "";
-  for (const token of tokens) {
-    if (token.kind === "text") {
-      out += escapeText(token.value);
-      continue;
-    }
-    const name = headings.get(token.name) ?? token.name;
-    if (!(token.name in ALLOWED)) continue;
-    if (token.kind === "open") {
-      if (token.name === "a" && stack.includes("a")) continue;
-      if (
-        token.name === "img" &&
-        !token.attrs.some(([attr, value]) => attr === "src" && safeUrl(value))
-      )
-        continue;
-      out += `<${name}${cleanAttrs(token.name, token.attrs)}>`;
-      if (!VOID.has(token.name)) stack.push(name);
-      continue;
-    }
-    if (VOID.has(token.name)) continue;
-    const index = stack.lastIndexOf(name);
-    if (index === -1) continue;
-    while (stack.length > index) out += `</${stack.pop()}>`;
-  }
-  while (stack.length) out += `</${stack.pop()}>`;
-  return out;
-}
+const IMG_WITHOUT_ALT = /<img\b(?![^>]*\balt=")/gi;
+
+/**
+ * Filtered HTML of an editor's rich text (see the module comment), and whether an image had no
+ * text alternative: it gets alt="" (a missing alt fails RGAA 1.1 outright; an empty one at least
+ * keeps screen readers from reading the file name), and edit mode tells the editor.
+ */
+export const sanitizeRichTextWithReport = (
+  html: unknown,
+  { headingLevel = 2, idPrefix = DEFAULT_PREFIX }: SanitizeOptions = {},
+): { html: string; imageWithoutAlt: boolean } => {
+  if (typeof html !== "string" || !html) return { html: "", imageWithoutAlt: false };
+  const prefix = PREFIX.test(idPrefix) ? idPrefix : DEFAULT_PREFIX;
+  const clean = renumberHeadings(filterFor(prefix).process(html), headingLevel);
+  const imageWithoutAlt = IMG_WITHOUT_ALT.test(clean);
+  IMG_WITHOUT_ALT.lastIndex = 0;
+  return { html: clean.replace(IMG_WITHOUT_ALT, '<img alt=""'), imageWithoutAlt };
+};
+
+/** Filtered HTML of an editor's rich text (see sanitizeRichTextWithReport). */
+export const sanitizeRichText = (html: unknown, options: SanitizeOptions = {}): string =>
+  sanitizeRichTextWithReport(html, options).html;
