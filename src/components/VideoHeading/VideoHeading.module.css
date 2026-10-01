@@ -1,25 +1,26 @@
+/* Hero section with a background video. Text sits on a uniform scrim: white text keeps at least
+   4.5:1 whatever the video shows (RGAA 3.2). */
 .hero {
   position: relative;
-  width: 100%;
-  height: 70vh;
-  min-height: 500px;
-  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  min-height: max(70vh, 500px);
   margin: 0 auto;
+  padding: 3rem 0 5rem;
+  overflow: hidden;
+  color: var(--jsmg-color-on-overlay);
 }
 
 .videoBackground {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
+  inset: 0;
 }
 
 .video {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -28,30 +29,22 @@
 .placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-size: 1.5rem;
+  background: var(--jsmg-color-hero-placeholder, linear-gradient(135deg, #3b4a9b 0%, #5b2a7a 100%));
 }
 
 .overlay {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.6));
+  inset: 0;
+  background: var(--jsmg-color-hero-scrim, rgb(0 0 0 / 60%));
 }
 
 .content {
   position: relative;
   z-index: 1;
+  box-sizing: border-box;
   width: 100%;
   max-width: 1200px;
   padding: 0 2rem;
-  color: #fff;
 }
 
 .textWrapper {
@@ -59,46 +52,66 @@
 }
 
 .title {
+  margin: 0 0 1.5rem;
+  color: var(--jsmg-color-on-overlay);
   font-size: 4rem;
   font-weight: 800;
-  margin-bottom: 1.5rem;
   line-height: 1.1;
-  text-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  overflow-wrap: anywhere;
+  text-shadow: 0 4px 12px rgb(0 0 0 / 50%);
 }
 
 .caption {
+  margin-bottom: 2rem;
   font-size: 1.5rem;
   line-height: 1.6;
-  margin-bottom: 2rem;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  overflow-wrap: anywhere;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 50%);
 }
 
 .caption p {
   margin: 0.5rem 0;
 }
 
+.caption a {
+  color: inherit;
+}
+
 .cta {
   display: inline-block;
   padding: 1rem 2.5rem;
+  border: 2px solid var(--jsmg-color-on-overlay);
+  border-radius: 50px;
+  background: rgb(0 0 0 / 35%);
+  color: var(--jsmg-color-on-overlay);
   font-size: 1.125rem;
   font-weight: 600;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.2);
-  backdrop-filter: blur(10px);
-  border: 2px solid #fff;
-  border-radius: 50px;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition:
+    background 0.3s ease,
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .cta:hover {
-  background: #fff;
-  color: #1a1a1a;
+  background: var(--jsmg-color-on-overlay);
+  color: var(--jsmg-color-media);
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
 }
 
-/* Responsive */
+.hero .cta:focus-visible {
+  outline-color: var(--jsmg-color-on-overlay);
+  box-shadow: 0 0 0 2px var(--jsmg-color-media);
+}
+
+/* Pause / play control of the background video. */
+.toggle {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+}
+
 @media (max-width: 1024px) {
   .title {
     font-size: 3rem;
@@ -111,8 +124,7 @@
 
 @media (max-width: 768px) {
   .hero {
-    height: 60vh;
-    min-height: 400px;
+    min-height: max(60vh, 400px);
   }
 
   .title {
@@ -130,11 +142,25 @@
 }
 
 @media (max-width: 480px) {
+  .content {
+    padding: 0 1rem;
+  }
+
   .title {
     font-size: 2rem;
   }
 
   .caption {
     font-size: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cta {
+    transition: none;
+  }
+
+  .cta:hover {
+    transform: none;
   }
 }

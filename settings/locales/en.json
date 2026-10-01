@@ -29,7 +29,8 @@
         "youtube": "YouTube",
         "vimeo": "Vimeo",
         "wistia": "Wistia",
-        "dailymotion": "Dailymotion"
+        "dailymotion": "Dailymotion",
+        "storylane": "Storylane"
       }
     },
     "videoHeading": {
@@ -43,7 +44,52 @@
       "next": "Next",
       "close": "Close",
       "loading": "Loading...",
-      "error": "An error occurred"
+      "error": "An error occurred",
+      "newWindow": "(opens in a new window)"
+    },
+    "image": {
+      "untitled": "Image {{index}} of {{total}}",
+      "viewFullSize": "view full size",
+      "position": "Image {{index}} of {{total}}",
+      "viewer": "Image viewer",
+      "previous": "Previous image",
+      "next": "Next image",
+      "close": "Close the image viewer",
+      "show": "Show image {{index}}",
+      "more_one": "See {{count}} more image",
+      "more_other": "See {{count}} more images"
+    },
+    "carousel": {
+      "label": "Image carousel",
+      "roleDescription": "carousel",
+      "slideRoleDescription": "slide",
+      "pause": "Pause the slideshow",
+      "play": "Play the slideshow",
+      "goTo": "Show image {{index}}",
+      "previous": "Previous image",
+      "next": "Next image"
+    },
+    "video": {
+      "untitled": "Untitled video",
+      "play": "Play the video: {{title}}",
+      "openDemo": "Open the interactive demo: {{title}}",
+      "frameTitle": "{{service}} video: {{title}}",
+      "demoFrameTitle": "Storylane interactive demo: {{title}}",
+      "player": "Video player",
+      "close": "Close the video player",
+      "nowPlaying": "Video shown: {{title}}",
+      "unsupported": "Your browser cannot play this video.",
+      "download": "Download the video",
+      "captions": "Captions",
+      "transcript": "Transcript",
+      "transcripts": "Transcripts"
+    },
+    "hero": {
+      "pause": "Pause the background video",
+      "play": "Play the background video"
+    },
+    "richText": {
+      "imageWithoutAlt": "An image of this text has no text alternative: give it one in the rich-text editor (it is shown to visitors as decorative)."
     }
   }
 }

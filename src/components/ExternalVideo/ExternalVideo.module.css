@@ -1,164 +1,65 @@
-.root {
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1rem;
-}
-
-.title {
-  font-size: 1.75rem;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #1a1a1a;
-}
-
-.description {
-  font-size: 1rem;
-  color: #666;
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.videoContainer {
+/* Preview of an external video: its thumbnail, a link that loads the player. */
+.preview {
   position: relative;
+  display: block;
   width: 100%;
-  background: #000;
-  border-radius: 8px;
+  aspect-ratio: 16 / 9;
+  border-radius: var(--jsmg-radius-lg);
+  background: var(--jsmg-color-media);
   overflow: hidden;
-}
-
-.videoPlayer {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  background: #000;
-}
-
-.videoIframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.videoPreview {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
   cursor: pointer;
 }
 
 .thumbnailImage {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
+/* White disc, dark mark (3:1 on any picture, RGAA 3.3); the ring takes the host accent. */
 .playButton {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  background: var(--primary);
-  border: 2px solid rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border: 3px solid var(--jsmg-color-accent, var(--primary, #1565c0));
   border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  color: var(--primary);
+  background: var(--jsmg-color-control);
+  color: var(--jsmg-color-on-control);
+  box-shadow: var(--jsmg-shadow-md);
+  transform: translate(-50%, -50%);
+  transition: transform 0.3s ease;
 }
 
-.playButton:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: var(--primary);
-  transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
+.playButton svg {
+  width: 28px;
+  height: 28px;
+  margin-left: 3px;
 }
 
-.videoFallback {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  background: #000;
+.preview:hover .playButton,
+.preview:focus-visible .playButton {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
-.posterImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.preview:focus-visible {
+  outline-offset: -5px;
+  box-shadow: inset 0 0 0 7px var(--jsmg-color-focus-halo);
 }
 
-.noVideo {
-  text-align: center;
-  padding: 3rem;
-  color: #666;
-  font-size: 1.125rem;
-}
+@media (prefers-reduced-motion: reduce) {
+  .playButton {
+    transition: none;
+  }
 
-/* Gallery Item Styles */
-.galleryItem {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.galleryItem:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.galleryVideoContainer {
-  position: relative;
-  width: 100%;
-}
-
-.galleryTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 1rem;
-  color: #1a1a1a;
-  line-height: 1.4;
-}
-
-.galleryDescription {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0 1rem 1rem 1rem;
-  line-height: 1.5;
-}
-
-.videoPlaceholder {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  background: #f5f5f5;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.videoPlaceholder .noVideo {
-  position: absolute;
-  padding: 1rem;
+  .preview:hover .playButton,
+  .preview:focus-visible .playButton {
+    transform: translate(-50%, -50%);
+  }
 }

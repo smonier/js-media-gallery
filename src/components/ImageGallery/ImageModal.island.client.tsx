@@ -1,291 +1,120 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import { ZoomIcon } from "../../utils/icons.js";
+import type { ImageData } from "../../utils/jcr.js";
+import ui from "../../utils/ui.module.css";
+import ImageViewer, { imageAlt } from "./ImageViewer.js";
 import classes from "./ImageGallery.module.css";
-
-interface ImageData {
-  url: string;
-  title: string;
-  description: string;
-}
 
 interface ImageModalProps {
   images: ImageData[];
   layout: "grid" | "masonry" | "default";
+  title?: string;
 }
 
-export default function ImageModal({ images, layout }: ImageModalProps) {
-  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
-  const [imageSpans, setImageSpans] = useState<{ [key: number]: number }>({});
+const LAYOUTS = {
+  default: {
+    list: classes.grid,
+    item: classes.gridItem,
+    frame: classes.imageWrapper,
+    image: classes.image,
+  },
+  grid: {
+    list: classes.grid,
+    item: classes.gridItem,
+    frame: classes.imageWrapper,
+    image: classes.image,
+  },
+  masonry: {
+    list: classes.masonry,
+    item: classes.masonryItem,
+    frame: classes.masonryFrame,
+    image: classes.masonryImage,
+  },
+};
 
-  const closeModal = () => {
-    setSelectedIndex(null);
+/**
+ * Grid or masonry of images. Each image is a link to the full-size file, so it works without
+ * JavaScript; with JavaScript the link opens the image viewer instead.
+ */
+export default function ImageModal({ images, layout, title }: ImageModalProps) {
+  const { t } = useTranslation("js-media-gallery");
+  const [selected, setSelected] = useState<number | null>(null);
+  const [opener, setOpener] = useState<HTMLElement | null>(null);
+  const [spans, setSpans] = useState<Record<number, number>>({});
+  const styles = LAYOUTS[layout] ?? LAYOUTS.default;
+  const total = images.length;
+
+  // Masonry: taller rows for portrait images.
+  const measure = (index: number, image: HTMLImageElement) => {
+    if (layout !== "masonry" || !image.naturalWidth) return;
+    const ratio = image.naturalHeight / image.naturalWidth;
+    const span = ratio > 1.5 ? 4 : ratio > 1.2 ? 3 : ratio < 0.7 ? 1 : 2;
+    setSpans((previous) => (previous[index] === span ? previous : { ...previous, [index]: span }));
   };
-
-  // Calculate masonry spans based on image aspect ratios
-  const handleImageLoad = (index: number, event: React.SyntheticEvent<HTMLImageElement>) => {
-    if (layout !== "masonry") return;
-
-    const img = event.currentTarget;
-    const aspectRatio = img.naturalHeight / img.naturalWidth;
-
-    // Calculate span based on aspect ratio
-    // Portrait images (tall) get more rows
-    let span = 2; // default
-    if (aspectRatio > 1.5)
-      span = 4; // very tall
-    else if (aspectRatio > 1.2)
-      span = 3; // tall
-    else if (aspectRatio < 0.7) span = 1; // wide
-
-    setImageSpans((prev) => ({ ...prev, [index]: span }));
-  };
-
-  const nextImage = () => {
-    if (selectedIndex !== null) {
-      setSelectedIndex((selectedIndex + 1) % images.length);
-    }
-  };
-
-  const previousImage = () => {
-    if (selectedIndex !== null) {
-      setSelectedIndex((selectedIndex - 1 + images.length) % images.length);
-    }
-  };
-
-  // Keyboard navigation
-  useEffect(() => {
-    if (selectedIndex === null) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") closeModal();
-      if (e.key === "ArrowRight") nextImage();
-      if (e.key === "ArrowLeft") previousImage();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [selectedIndex]);
-
-  const getLayoutClass = () => {
-    switch (layout) {
-      case "grid":
-        return classes.grid;
-      case "masonry":
-        return classes.masonry;
-      default:
-        return classes.grid;
-    }
-  };
-
-  const getItemClass = () => {
-    switch (layout) {
-      case "grid":
-        return classes.gridItem;
-      case "masonry":
-        return classes.masonryItem;
-      default:
-        return classes.gridItem;
-    }
-  };
-
-  const getImageClass = () => {
-    switch (layout) {
-      case "grid":
-        return classes.image;
-      case "masonry":
-        return classes.masonryImage;
-      default:
-        return classes.image;
-    }
-  };
-
-  const getWrapperClass = () => {
-    switch (layout) {
-      case "grid":
-        return classes.imageWrapper;
-      case "masonry":
-        return "";
-      default:
-        return classes.imageWrapper;
-    }
-  };
-
-  const selectedImage = selectedIndex !== null ? images[selectedIndex] : null;
 
   return (
     <>
-      <div className={getLayoutClass()}>
+      <ul className={styles.list}>
         {images.map((image, index) => {
-          const masonryStyle =
-            layout === "masonry" && imageSpans[index]
-              ? { gridRowEnd: `span ${imageSpans[index]}` }
-              : {};
-
+          const caption = layout !== "default" && (image.title || image.description);
           return (
-            <button
+            <li
               key={`${image.url}-${index}`}
-              type="button"
-              className={`${getItemClass()} ${classes.imageButton}`}
-              onClick={() => setSelectedIndex(index)}
-              style={masonryStyle}
+              className={styles.item}
+              style={spans[index] ? { gridRowEnd: `span ${spans[index]}` } : undefined}
             >
-              {getWrapperClass() && (
-                <div className={getWrapperClass()}>
-                  <img
-                    src={image.url}
-                    className={getImageClass()}
-                    alt={image.title || `Image ${index + 1}`}
-                    onLoad={(e) => handleImageLoad(index, e)}
-                  />
-                  <div className={classes.imageOverlay}>
-                    <svg
-                      width="48"
-                      height="48"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.35-4.35" />
-                    </svg>
-                  </div>
-                </div>
-              )}
-              {!getWrapperClass() && (
-                <>
-                  <img
-                    src={image.url}
-                    className={`${getImageClass()} ${classes.imageButton}`}
-                    alt={image.title || `Image ${index + 1}`}
-                    onLoad={(e) => handleImageLoad(index, e)}
-                  />
-                  <div className={classes.imageOverlay}>
-                    <svg
-                      width="48"
-                      height="48"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="white"
-                      strokeWidth="2"
-                    >
-                      <circle cx="11" cy="11" r="8" />
-                      <path d="m21 21-4.35-4.35" />
-                    </svg>
-                  </div>
-                </>
-              )}
-              {(image.title || image.description) && layout !== "default" && (
-                <figcaption className={layout === "masonry" ? classes.masonryCaption : undefined}>
-                  {image.title && (
-                    <h3 className={layout === "grid" ? classes.imageTitle : classes.masonryTitle}>
-                      {image.title}
-                    </h3>
-                  )}
-                  {image.description && (
-                    <p
-                      className={
-                        layout === "grid" ? classes.imageDescription : classes.masonryDescription
-                      }
-                    >
-                      {image.description}
-                    </p>
-                  )}
-                </figcaption>
-              )}
-            </button>
+              <figure className={classes.figure}>
+                <a
+                  href={image.url}
+                  className={`${ui.control} ${classes.imageLink}`}
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setOpener(event.currentTarget);
+                    setSelected(index);
+                  }}
+                >
+                  <span className={styles.frame}>
+                    <img
+                      src={image.url}
+                      alt={imageAlt(image, index, total, t)}
+                      className={styles.image}
+                      loading="lazy"
+                      ref={(element) => {
+                        if (element?.complete) measure(index, element);
+                      }}
+                      onLoad={(event) => measure(index, event.currentTarget)}
+                    />
+                    <span className={classes.imageOverlay} aria-hidden="true">
+                      <ZoomIcon />
+                    </span>
+                  </span>
+                  <span className={ui.visuallyHidden}>
+                    {" "}
+                    ({t("mediaGallery.image.viewFullSize")})
+                  </span>
+                </a>
+                {caption && (
+                  <figcaption className={classes.caption}>
+                    {image.title && <span className={classes.captionTitle}>{image.title}</span>}
+                    {image.description && (
+                      <span className={classes.captionText}>{image.description}</span>
+                    )}
+                  </figcaption>
+                )}
+              </figure>
+            </li>
           );
         })}
-      </div>
-
-      {selectedImage && (
-        <div className={classes.imageModalOverlay} onClick={closeModal}>
-          <div className={classes.imageModalContent} onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              className={classes.imageModalClose}
-              onClick={closeModal}
-              aria-label="Close image"
-            >
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <line x1="18" y1="6" x2="6" y2="18" />
-                <line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
-            </button>
-
-            {images.length > 1 && (
-              <>
-                <button
-                  type="button"
-                  className={`${classes.imageModalNav} ${classes.imageModalNavPrev}`}
-                  onClick={previousImage}
-                  aria-label="Previous image"
-                >
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="15 18 9 12 15 6" />
-                  </svg>
-                </button>
-
-                <button
-                  type="button"
-                  className={`${classes.imageModalNav} ${classes.imageModalNavNext}`}
-                  onClick={nextImage}
-                  aria-label="Next image"
-                >
-                  <svg
-                    width="32"
-                    height="32"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </button>
-              </>
-            )}
-
-            <div className={classes.imageModalImageWrapper}>
-              <img
-                src={selectedImage.url}
-                alt={selectedImage.title || "Image"}
-                className={classes.imageModalImage}
-              />
-            </div>
-
-            {(selectedImage.title || selectedImage.description) && (
-              <div className={classes.imageModalInfo}>
-                {selectedImage.title && (
-                  <h2 className={classes.imageModalTitle}>{selectedImage.title}</h2>
-                )}
-                {selectedImage.description && (
-                  <p className={classes.imageModalDescription}>{selectedImage.description}</p>
-                )}
-              </div>
-            )}
-
-            {images.length > 1 && (
-              <div className={classes.imageModalCounter}>
-                {selectedIndex! + 1} / {images.length}
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+      </ul>
+      <ImageViewer
+        images={images}
+        index={selected}
+        onIndexChange={setSelected}
+        onClose={() => setSelected(null)}
+        title={title}
+        opener={opener}
+      />
     </>
   );
 }

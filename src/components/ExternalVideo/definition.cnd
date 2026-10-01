@@ -4,7 +4,8 @@
 
 [jsmediagallerynt:externalVideo] > jnt:content, mix:title
  - videoDesc (string) i18n
- - videoService (string)
+ - videoService (string, choicelist[resourceBundle]) = 'youtube' < 'youtube', 'vimeo', 'wistia', 'dailymotion', 'storylane'
  - videoId (string) i18n
  - videoPoster (weakreference, picker[type='image']) < 'jmix:image'
- - featured (boolean) = false 
+ - transcript (string, richtext) i18n
+ - featured (boolean) = false

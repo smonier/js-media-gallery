@@ -2,7 +2,13 @@
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 <jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
 <jsmediagallerymix = 'http://modules.se.jahia.org/mediagal/mix/1.0'>
-<seumix = 'http://modules.se.jahia.org/se-utils/mix/1.0'>
 
 // Shared mixins used across components
 [jsmediagallerymix:component] > jmix:droppableContent, jmix:accessControllableContent mixin
+
+// A link picked with Jahia's native link selector: "internal" adds jmix:internalLink (page picker,
+// j:linknode), "external" adds jmix:externalLink (j:url, j:linkTitle). Both targets are set per
+// language. Never declare j:linknode or j:url here.
+[jsmediagallerymix:linkTo] mixin
+ - j:linkType (string, choicelist[linkTypeInitializer,resourceBundle]) = 'none' autocreated indexed=no
+ - openInNewTab (boolean) = false autocreated

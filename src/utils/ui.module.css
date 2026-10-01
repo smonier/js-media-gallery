@@ -1,0 +1,208 @@
+/*
+ * Shared tokens and parts of the media gallery components.
+ *
+ * Every colour, shadow and radius is a custom property with a neutral default, so a host theme can
+ * map them to its own tokens (for example in a wrapper class). Text that sits on the host page
+ * (titles, intro text, empty states) takes the host's text colour unless --jsmg-color-page-text is
+ * set; the module's own surfaces (cards, dialogs, players) keep their colours in both schemes.
+ */
+:root {
+  --jsmg-color-surface: #fff;
+  --jsmg-color-surface-sunken: #f5f5f5;
+  --jsmg-color-text: #1a1a1a;
+  --jsmg-color-text-muted: #595959;
+  --jsmg-color-border: #8a8a8a;
+  --jsmg-color-media: #000;
+  --jsmg-color-overlay: rgb(0 0 0 / 96%);
+  --jsmg-color-on-overlay: #fff;
+  --jsmg-color-on-overlay-muted: #e0e0e0;
+  --jsmg-color-scrim: rgb(0 0 0 / 70%);
+  --jsmg-color-control: #fff;
+  --jsmg-color-on-control: #1a1a1a;
+  --jsmg-color-focus: #1a1a1a;
+  --jsmg-color-focus-halo: #fff;
+  --jsmg-radius: 8px;
+  --jsmg-radius-lg: 12px;
+  --jsmg-shadow-sm: 0 2px 8px rgb(0 0 0 / 10%);
+  --jsmg-shadow-md: 0 4px 16px rgb(0 0 0 / 15%);
+  --jsmg-shadow-lg: 0 20px 60px rgb(0 0 0 / 50%);
+}
+
+/* Hidden on screen, read by assistive technologies. */
+.visuallyHidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/*
+ * Focus ring of every control (RGAA 10.7): a dark outline with a light halo, so that one of the two
+ * tones keeps 3:1 against any background, photos included.
+ */
+.control:focus-visible {
+  outline: 3px solid var(--jsmg-color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--jsmg-color-focus-halo);
+}
+
+/* Round icon button used on media (close, previous, next, pause). At least 44 px (WCAG 2.5.5). */
+.iconButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 2px solid var(--jsmg-color-on-control);
+  border-radius: 50%;
+  background: var(--jsmg-color-control);
+  color: var(--jsmg-color-on-control);
+  box-shadow: var(--jsmg-shadow-sm);
+  cursor: pointer;
+}
+
+.iconButton svg {
+  width: 24px;
+  height: 24px;
+  pointer-events: none;
+}
+
+/* ---- Modal dialog ------------------------------------------------------------------------- */
+.dialog {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  max-height: none;
+  margin: 0;
+  padding: clamp(0.5rem, 3vw, 2rem);
+  border: 0;
+  background: transparent;
+  color: var(--jsmg-color-on-overlay);
+  overflow: auto;
+}
+
+.dialog[open] {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dialog::backdrop {
+  background: var(--jsmg-color-overlay);
+}
+
+.dialogPanel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 1400px;
+  max-height: 100%;
+  margin: auto;
+}
+
+.dialogHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.dialogTitle {
+  margin: 0;
+  color: var(--jsmg-color-on-overlay);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.dialogText {
+  margin: 0;
+  color: var(--jsmg-color-on-overlay-muted);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.dialog .control:focus-visible {
+  outline-color: var(--jsmg-color-on-overlay);
+  box-shadow: 0 0 0 2px var(--jsmg-color-media);
+}
+
+/* Transcript, under a player. */
+.transcript {
+  margin-top: 1rem;
+}
+
+.transcript summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.transcriptBody {
+  margin-top: 0.5rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Edit mode only: a note for the editor next to the content it is about. */
+.editHint {
+  margin: 0.5rem 0 0;
+  padding: 0.5rem 0.75rem;
+  border: 1px dashed var(--jsmg-color-border);
+  border-radius: var(--jsmg-radius);
+  background: var(--jsmg-color-surface);
+  color: var(--jsmg-color-text);
+  font-size: 0.875rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .dialog::backdrop,
+  .dialogPanel {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* ---- Players ------------------------------------------------------------------------------ */
+.dialogWide {
+  max-width: none;
+  height: 100%;
+}
+
+.playerFrame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  max-height: 75vh;
+  border-radius: var(--jsmg-radius-lg);
+  background: var(--jsmg-color-media);
+  overflow: hidden;
+}
+
+.playerFrameDemo {
+  flex: 1 1 auto;
+  aspect-ratio: auto;
+  max-height: none;
+  min-height: 60vh;
+}
+
+.player {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: var(--jsmg-color-media);
+}
