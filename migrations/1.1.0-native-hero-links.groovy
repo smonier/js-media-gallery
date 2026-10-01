@@ -1,19 +1,19 @@
 /*
- * Upgrade to js-media-gallery 1.0.0: the video hero's link uses Jahia's native link fields.
+ * Upgrade to js-media-gallery 1.1.0: the video hero's link uses Jahia's native link fields.
  *
  * Earlier versions stored the hero's call to action in the se-utils link mixin (seu:linkType,
- * seu:internalLink, seu:externalLink, seu:linkTarget). Version 1.0.0 uses Jahia's own link type
+ * seu:internalLink, seu:externalLink, seu:linkTarget). Version 1.1.0 uses Jahia's own link type
  * (j:linkType, j:linknode, j:url) and an "Open in a new tab" checkbox (openInNewTab), and every
  * external video's provider must be one of youtube, vimeo, wistia, dailymotion, storylane.
  *
  * Run it in the Groovy console (/modules/tools/groovyConsole.jsp), as root, in two steps:
  *
- *   1. STEP = "before", BEFORE deploying 1.0.0: copies each hero's link target to Jahia's link
+ *   1. STEP = "before", BEFORE deploying 1.1.0: copies each hero's link target to Jahia's link
  *      fields (j:linknode or j:url, in every language of its site), removes the se-utils values and
  *      mixins, writes lower-case providers, and keeps the link type and the new-tab choice in
  *      PLAN_FILE for step 2. Changes are applied to the default and live workspaces alike, so
  *      nothing else gets published.
- *   2. Deploy 1.0.0.
+ *   2. Deploy 1.1.0.
  *   3. STEP = "after": sets j:linkType and openInNewTab from PLAN_FILE, then deletes it.
  *
  * Each step first runs with DRY_RUN = true and only lists what it would change; set it to false
@@ -30,7 +30,7 @@ import org.jahia.services.content.JCRTemplate
 
 def STEP = "before"
 def DRY_RUN = true
-def PLAN_FILE = new File(System.getProperty("java.io.tmpdir"), "js-media-gallery-1.0.0-hero-links.json")
+def PLAN_FILE = new File(System.getProperty("java.io.tmpdir"), "js-media-gallery-1.1.0-hero-links.json")
 
 def HERO = "jsmediagallerynt:videoHeading"
 def SEU_PROPERTIES = ["seu:linkType", "seu:internalLink", "seu:externalLink", "seu:linkTarget"]
