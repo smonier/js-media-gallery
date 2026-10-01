@@ -22,9 +22,12 @@ export default jahiaComponent(
   (props: VideoHeadingProps, { currentNode, currentResource, renderContext }) => {
     const { t } = useTranslation("js-media-gallery");
     const { "jcr:title": title, caption, ctaLabel } = props;
-    const videoUrl = fileUrl(props.video, renderContext);
-    const posterUrl = fileUrl(props.videoPoster, renderContext);
-    const link = resolveLink(props as Record<string, unknown>, renderContext);
+    const videoUrl = fileUrl(props.video, renderContext, { node: currentNode, property: "video" });
+    const posterUrl = fileUrl(props.videoPoster, renderContext, {
+      node: currentNode,
+      property: "videoPoster",
+    });
+    const link = resolveLink(props as Record<string, unknown>, renderContext, currentNode);
     // The page template owns the only h1: the hero title is a section heading (RGAA 9.1).
     const level = headingLevel(currentResource, 2);
     const Heading = headingTag(level);

@@ -11,9 +11,9 @@ export default jahiaComponent(
     name: "carousel",
     displayName: "Carousel View",
   },
-  (props: ImageGalleryProps, { renderContext, currentResource }) => {
+  (props: ImageGalleryProps, { currentNode, renderContext, currentResource }) => {
     const { "jcr:title": title, bannerText } = props;
-    const images = collectImages(props, renderContext);
+    const images = collectImages(props, renderContext, currentNode);
     const level = headingLevel(currentResource, 2);
     // In edit mode the slides are shown side by side, with no rotation.
     const flat = renderContext.isEditMode();

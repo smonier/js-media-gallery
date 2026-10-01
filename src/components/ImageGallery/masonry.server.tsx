@@ -11,9 +11,9 @@ export default jahiaComponent(
     name: "masonry",
     displayName: "Masonry Layout",
   },
-  (props: ImageGalleryProps, { renderContext, currentResource }) => {
+  (props: ImageGalleryProps, { currentNode, renderContext, currentResource }) => {
     const { "jcr:title": title, bannerText } = props;
-    const images = collectImages(props, renderContext);
+    const images = collectImages(props, renderContext, currentNode);
     const level = headingLevel(currentResource, 2);
     return (
       <GalleryFrame
