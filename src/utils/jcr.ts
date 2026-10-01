@@ -95,21 +95,26 @@ export interface ResolvedLink {
   newWindow: boolean;
 }
 
-/** Link of the seumix:linkTo mixin (internal page or external address). */
+/**
+ * Link of the jsmediagallerymix:linkTo mixin, Jahia's native link type: "internal" points at a
+ * node (j:linknode), "external" at an address (j:url), both set per language. No link when the
+ * current language has no target.
+ */
 export const resolveLink = (
   props: Record<string, unknown>,
   renderContext: RenderContext,
 ): ResolvedLink | undefined => {
-  const type = props["seu:linkType"];
+  const type = props["j:linkType"];
   let href: string | undefined;
-  if (type === "internalLink" && isNode(props["seu:internalLink"])) {
-    server.render.addCacheDependency({ node: props["seu:internalLink"] }, renderContext);
-    href = buildNodeUrl(props["seu:internalLink"]);
-  } else if (type === "externalLink" && typeof props["seu:externalLink"] === "string") {
-    const value = props["seu:externalLink"].trim();
+  if (type === "internal" && isNode(props["j:linknode"])) {
+    server.render.addCacheDependency({ node: props["j:linknode"] }, renderContext);
+    href = buildNodeUrl(props["j:linknode"]);
+  } else if (type === "external" && typeof props["j:url"] === "string") {
+    const value = props["j:url"].trim();
     href = SAFE_LINK.test(value) ? value : undefined;
   }
-  return href ? { href, newWindow: props["seu:linkTarget"] === "_blank" } : undefined;
+  const newWindow = props["openInNewTab"] === true || props["openInNewTab"] === "true";
+  return href ? { href, newWindow } : undefined;
 };
 
 const VIDEO_PROPS = [

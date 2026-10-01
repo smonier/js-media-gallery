@@ -2,9 +2,8 @@
 <jmix = 'http://www.jahia.org/jahia/mix/1.0'>
 <jsmediagallerynt = 'http://modules.se.jahia.org/mediagal/nt/1.0'>
 <jsmediagallerymix = 'http://modules.se.jahia.org/mediagal/mix/1.0'>
-<seumix = 'http://modules.se.jahia.org/se-utils/mix/1.0'>
 
-[jsmediagallerynt:videoHeading] > jnt:content, mix:title, jsmediagallerymix:component, seumix:linkTo
+[jsmediagallerynt:videoHeading] > jnt:content, mix:title, jsmediagallerymix:component, jsmediagallerymix:linkTo
  - video (weakreference, picker[type='file']) i18n
  - videoPoster (weakreference, picker[type='image']) < 'jmix:image'
  - caption (string, richtext) internationalized
