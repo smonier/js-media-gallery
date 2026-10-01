@@ -447,7 +447,7 @@ Each component folder holds its `definition.cnd`, `types.ts`, `*.server.tsx` vie
 
 ## Further documentation
 
-- [ARCHITECTURE.md](./ARCHITECTURE.md): component hierarchy, views and islands, data flow, provider integration.
+- [ARCHITECTURE.md](./ARCHITECTURE.md): how the module is built (views and islands, rendering flow, edit mode, video providers) and how to add a video provider or a view.
 
 ## Changelog
 
