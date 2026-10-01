@@ -236,6 +236,13 @@
   color: var(--jsmg-color-page-text, currentColor);
 }
 
+.transcriptsTitle {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
 @media (max-width: 768px) {
   .featuredLayout {
     grid-template-columns: minmax(0, 1fr);

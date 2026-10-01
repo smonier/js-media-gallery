@@ -1,8 +1,8 @@
-import { getChildNodes, jahiaComponent, Render } from "@jahia/javascript-modules-library";
+import { getChildNodes, jahiaComponent } from "@jahia/javascript-modules-library";
 import { headingLevel } from "../../utils/jcr.js";
 import GalleryFrame from "./GalleryFrame.js";
 import type { VideoGalleryProps } from "./types.js";
-import classes from "./VideoGallery.module.css";
+import VideoList from "./VideoList.js";
 
 export default jahiaComponent(
   {
@@ -11,28 +11,18 @@ export default jahiaComponent(
     name: "default",
     displayName: "Default View",
   },
-  (props: VideoGalleryProps, { currentNode, currentResource }) => {
+  (props: VideoGalleryProps, { currentNode, currentResource, renderContext }) => {
     const { "jcr:title": title, bannerText } = props;
     const level = headingLevel(currentResource, 2);
-    const childNodes = getChildNodes(currentNode, -1, 0);
+    const isEmpty = getChildNodes(currentNode, 1, 0).length === 0;
     return (
       <GalleryFrame
         title={title}
         bannerText={bannerText}
         level={level}
-        isEmpty={childNodes.length === 0}
+        isEmpty={isEmpty && !renderContext.isEditMode()}
       >
-        <ul className={classes.defaultGallery}>
-          {childNodes.map((childNode) => (
-            <li key={childNode.getIdentifier()} className={classes.defaultGalleryItem}>
-              <Render
-                node={childNode}
-                view="gallery"
-                parameters={{ headingLevel: String(title ? level + 1 : level) }}
-              />
-            </li>
-          ))}
-        </ul>
+        <VideoList currentNode={currentNode} headingLevel={title ? level + 1 : level} />
       </GalleryFrame>
     );
   },

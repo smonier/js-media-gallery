@@ -4,6 +4,7 @@ import { collectVideos } from "./collect.js";
 import GalleryFrame from "./GalleryFrame.js";
 import FeaturedGallery from "./FeaturedGallery.island.client.js";
 import Transcripts from "./Transcripts.js";
+import VideoList from "./VideoList.js";
 import type { VideoGalleryProps } from "./types.js";
 
 export default jahiaComponent(
@@ -17,6 +18,13 @@ export default jahiaComponent(
     const { "jcr:title": title, bannerText } = props;
     const level = headingLevel(currentResource, 2);
     const itemLevel = title ? level + 1 : level;
+    if (renderContext.isEditMode()) {
+      return (
+        <GalleryFrame title={title} bannerText={bannerText} level={level} isEmpty={false}>
+          <VideoList currentNode={currentNode} headingLevel={itemLevel} />
+        </GalleryFrame>
+      );
+    }
     const { videos, transcripts } = collectVideos(
       currentNode,
       renderContext,
@@ -35,7 +43,7 @@ export default jahiaComponent(
         isEmpty={sorted.length === 0}
       >
         <Island component={FeaturedGallery} props={{ videos: sorted, headingLevel: itemLevel }} />
-        <Transcripts transcripts={transcripts} level={itemLevel + 1} />
+        <Transcripts transcripts={transcripts} level={itemLevel} />
       </GalleryFrame>
     );
   },

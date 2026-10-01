@@ -4,6 +4,7 @@ import { collectVideos } from "./collect.js";
 import GalleryFrame from "./GalleryFrame.js";
 import VideoModal from "./VideoModal.island.client.js";
 import Transcripts from "./Transcripts.js";
+import VideoList from "./VideoList.js";
 import type { VideoGalleryProps } from "./types.js";
 
 export default jahiaComponent(
@@ -17,6 +18,13 @@ export default jahiaComponent(
     const { "jcr:title": title, bannerText, itemWidth } = props;
     const level = headingLevel(currentResource, 2);
     const itemLevel = title ? level + 1 : level;
+    if (renderContext.isEditMode()) {
+      return (
+        <GalleryFrame title={title} bannerText={bannerText} level={level} isEmpty={false}>
+          <VideoList currentNode={currentNode} headingLevel={itemLevel} />
+        </GalleryFrame>
+      );
+    }
     const { videos, transcripts } = collectVideos(
       currentNode,
       renderContext,
@@ -36,7 +44,7 @@ export default jahiaComponent(
         <div style={style as React.CSSProperties}>
           <Island component={VideoModal} props={{ videos, headingLevel: itemLevel }} />
         </div>
-        <Transcripts transcripts={transcripts} level={itemLevel + 1} />
+        <Transcripts transcripts={transcripts} level={itemLevel} />
       </GalleryFrame>
     );
   },

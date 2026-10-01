@@ -10,7 +10,10 @@ export interface GalleryVideos {
   transcripts: { id: string; title: string; html: string }[];
 }
 
-/** Videos of a gallery that can be played, in the editor's order. */
+/**
+ * Videos of a gallery that can be played, in the editor's order. A video that is not set up yet is
+ * left out of the public views; in edit mode the views render every video (VideoList).
+ */
 export const collectVideos = (
   currentNode: JCRNodeWrapper,
   renderContext: RenderContext,
