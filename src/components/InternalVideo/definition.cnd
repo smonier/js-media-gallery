@@ -6,4 +6,6 @@
  - videoDesc (string) i18n
  - video (weakreference, picker[type='file']) i18n
  - videoPoster (weakreference, picker[type='image']) < 'jmix:image'
- - featured (boolean) = false 
+ - captions (weakreference, picker[type='file']) i18n
+ - transcript (string, richtext) i18n
+ - featured (boolean) = false

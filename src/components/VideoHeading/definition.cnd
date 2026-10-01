@@ -6,4 +6,6 @@
 
 [jsmediagallerynt:videoHeading] > jnt:content, mix:title, jsmediagallerymix:component, seumix:linkTo
  - video (weakreference, picker[type='file']) i18n
+ - videoPoster (weakreference, picker[type='image']) < 'jmix:image'
  - caption (string, richtext) internationalized
+ - ctaLabel (string) i18n
