@@ -6,57 +6,53 @@
 
 ```
 src/components/
-├── ExternalVideo/          ✅ Complete
-│   ├── definition.cnd
-│   ├── types.ts
-│   ├── default.server.tsx
+├── ExternalVideo/
+│   ├── definition.cnd, types.ts
+│   ├── default.server.tsx, gallery.server.tsx
 │   ├── ExternalVideoPlayer.island.client.tsx
 │   └── ExternalVideo.module.css
 │
-├── ImageGallery/          ✅ Complete
-│   ├── definition.cnd
-│   ├── types.ts
-│   ├── grid.server.tsx
-│   ├── masonry.server.tsx
-│   ├── carousel.server.tsx
-│   ├── carousel.island.client.tsx
+├── ImageGallery/
+│   ├── definition.cnd, types.ts
+│   ├── default / grid / masonry / gallery / carousel .server.tsx
+│   ├── ImageModal / GalleryIsland / carousel .island.client.tsx
+│   ├── GalleryFrame.tsx, ImageViewer.tsx
 │   └── ImageGallery.module.css
 │
-├── InternalVideo/         ✅ Complete
-│   ├── definition.cnd
-│   ├── types.ts
-│   ├── default.server.tsx
-│   └── InternalVideo.module.css
+├── InternalVideo/
+│   ├── definition.cnd, types.ts
+│   └── default.server.tsx, gallery.server.tsx
 │
-├── VideoGallery/          ✅ Complete
-│   ├── definition.cnd
-│   ├── types.ts
-│   ├── featured.server.tsx
-│   ├── grid.server.tsx
-│   ├── VideoPlayer.island.client.tsx
+├── VideoGallery/
+│   ├── definition.cnd, types.ts
+│   ├── default / featured / grid .server.tsx
+│   ├── FeaturedGallery / VideoModal .island.client.tsx
+│   ├── GalleryFrame.tsx, VideoList.tsx, Transcripts.tsx, collect.ts
 │   └── VideoGallery.module.css
 │
-└── VideoHeading/          ✅ Complete
-    ├── definition.cnd
-    ├── types.ts
-    ├── default.server.tsx
+└── VideoHeading/
+    ├── definition.cnd, types.ts
+    ├── default.server.tsx, HeroVideo.island.client.tsx
     └── VideoHeading.module.css
+
+src/utils/                 Shared parts: ModalDialog, VideoDialog, VideoFrame, VideoBlock,
+                           RichText + sanitize.ts, Transcript, jcr.ts, video.ts, i18n.ts,
+                           useThumbnail, icons, ui.module.css; unit tests in *.test.ts
 ```
 
 ### Settings Structure
 
 ```
 settings/
-├── definitions.cnd                          ✅ Updated (shared mixins only)
+├── definitions.cnd                          Shared mixins (component, linkTo)
 ├── content-editor-forms/
-│   ├── README.md                           ✅ Documentation created
+│   ├── README.md
 │   └── fieldsets/
-│       ├── jsmediagallerynt_externalVideo.json  ✅ Video services
-│       └── jsmediagallerymix_galleryType.json   ✅ Gallery types
+│       └── jsmediagallerynt_imageGallery.json   Gallery type choice
 ├── locales/
-│   └── en.json                             ✅ Client-side i18n
+│   ├── en.json, fr.json                    View labels
 └── resources/
-    └── en.properties                       ✅ Server-side labels
+    └── js-media-gallery_en.properties, js-media-gallery_fr.properties   Editor labels
 ```
 
 ## Key Features Implemented
@@ -163,9 +159,9 @@ settings/
    yarn deploy
    ```
 
-3. **Add more languages** (optional):
-   - Create `settings/locales/fr.json`
-   - Create `settings/resources/fr.properties`
+3. **Add more languages** (optional, EN and FR ship):
+   - Add `settings/locales/<lang>.json` with the same keys as `en.json`
+   - Add `settings/resources/js-media-gallery_<lang>.properties`
 
 4. **Customize styling**:
    - Modify CSS modules to match your brand
@@ -173,28 +169,25 @@ settings/
 
 5. **Extend video services** (optional):
    - Add support for additional services
-   - Update `ExternalVideo/definition.cnd`
-   - Add cases to `ExternalVideoPlayer.island.client.tsx`
+   - Update `ExternalVideo/definition.cnd` (value list) and the resource bundles
+   - Add the provider to `src/utils/video.ts` (identifier format, hosts, player and page
+     addresses) and its cases to `src/utils/video.test.ts` (`yarn test`)
 
-## TypeScript Build Errors
+## Checks
 
-The TypeScript compilation errors you see are **expected** and **normal**:
-- Missing `@jahia/javascript-modules-library` types
-- Missing CSS module types
-- These resolve at runtime in Jahia environment
-- The module will build and deploy successfully
+`yarn build:check` (TypeScript, then the build), `yarn lint` and `yarn test` (Vitest) all run
+clean; CI runs the tests and the build on every push.
 
 ## Files Created
 
-Total: **30+ files** across:
 - 5 component folders
-- Server views (9 files)
-- Client islands (3 files)
-- CSS modules (5 files)
+- Server views (13 files)
+- Client islands (7 files)
+- CSS modules (6 files, shared tokens in `src/utils/ui.module.css`)
 - Type definitions (5 files)
 - CND definitions (6 files)
-- Settings & localization (5 files)
-- Documentation (3 files)
+- Settings and localization (EN and FR)
+- Unit tests (`src/utils/*.test.ts`)
 
 ## Architecture Benefits
 

@@ -29,18 +29,26 @@
 ### Image Gallery Views
 ```
 ImageGallery Component
+    ├── default.server.tsx    → Default View (grid)
     ├── grid.server.tsx       → Grid View (responsive cards)
     ├── masonry.server.tsx    → Masonry Layout (waterfall)
-    └── carousel.server.tsx   → Carousel (auto-play slider)
-        └── carousel.island.client.tsx (interactivity)
+    │   └── ImageModal.island.client.tsx (the three views above: links that open ImageViewer)
+    ├── gallery.server.tsx    → Main image and thumbnails
+    │   └── GalleryIsland.island.client.tsx
+    └── carousel.server.tsx   → Carousel (slider with a pause button)
+        └── carousel.island.client.tsx
 ```
 
 ### Video Gallery Views
 ```
 VideoGallery Component
+    ├── default.server.tsx    → Default View (each video in its "gallery" view)
     ├── featured.server.tsx   → Featured + Grid (large video + thumbnails)
-    └── grid.server.tsx       → Grid View (uniform grid)
-        └── VideoPlayer.island.client.tsx (video playback)
+    │   └── FeaturedGallery.island.client.tsx
+    └── grid.server.tsx       → Grid View (cards that open a modal player)
+        └── VideoModal.island.client.tsx
+In edit mode every view renders each video in its own "gallery" view (VideoList.tsx), so Page
+Builder can select it.
 ```
 
 ## Data Flow
@@ -86,10 +94,11 @@ VideoGallery Component
        │
        ▼
 ┌──────────────────────┐
-│VideoPlayer.island    │
-│  - Fetch thumbnail   │
-│  - Generate embed URL│
-│  - Handle play/pause │
+│Islands + src/utils   │
+│  - video.ts: parse   │
+│    ids and addresses │
+│  - useThumbnail      │
+│  - VideoFrame: embed │
 └──────┬───────────────┘
        │
        ▼
@@ -144,20 +153,19 @@ Component/
 settings/
 ├── definitions.cnd                    # Shared mixins ONLY
 │   ├── jsmediagallerymix:component
-│   ├── jsmediagallerymix:galleryType
-│   ├── jsmediagallerymix:directoryLink
-│   └── jsmediagallerymix:imagesLink
-│
+│   └── jsmediagallerymix:linkTo       # Jahia's native link type (hero)
+│                                      # (directoryLink / imagesLink: ImageGallery/definition.cnd)
 ├── content-editor-forms/
 │   └── fieldsets/
-│       ├── jsmediagallerynt_externalVideo.json
-│       └── jsmediagallerymix_galleryType.json
+│       └── jsmediagallerynt_imageGallery.json   # gallery type choice (adds the mixin)
 │
 ├── locales/
-│   └── en.json                        # Client i18n
+│   ├── en.json                        # View labels
+│   └── fr.json
 │
 └── resources/
-    └── en.properties                  # Server labels
+    ├── js-media-gallery_en.properties # Editor labels
+    └── js-media-gallery_fr.properties
 ```
 
 ## CSS Module Pattern
@@ -184,20 +192,26 @@ Benefits:
 External Video Component
     │
     ├─→ YouTube
-    │    ├─ Thumbnail: img.youtube.com/vi/{id}/maxresdefault.jpg
-    │    └─ Embed: youtube.com/embed/{id}
+    │    ├─ Thumbnail: i.ytimg.com/vi/{id}/hqdefault.jpg
+    │    └─ Embed: youtube-nocookie.com/embed/{id}
     │
     ├─→ Vimeo
-    │    ├─ Thumbnail: API call to vimeo.com/api/v2/video/{id}.json
-    │    └─ Embed: player.vimeo.com/video/{id}
+    │    ├─ Thumbnail: vimeo.com/api/v2/video/{id}.json (oEmbed for an unlisted video)
+    │    └─ Embed: player.vimeo.com/video/{id} (?h={key} for an unlisted video)
     │
     ├─→ Wistia
     │    ├─ Thumbnail: fast.wistia.com/embed/medias/{id}/swatch
     │    └─ Embed: fast.wistia.net/embed/iframe/{id}
     │
-    └─→ Dailymotion
-         ├─ Thumbnail: dailymotion.com/thumbnail/video/{id}
-         └─ Embed: dailymotion.com/embed/video/{id}
+    ├─→ Dailymotion
+    │    ├─ Thumbnail: dailymotion.com/thumbnail/video/{id}
+    │    └─ Embed: dailymotion.com/embed/video/{id}
+    │
+    └─→ Storylane
+         ├─ Thumbnail: oEmbed metadata (first frame)
+         └─ Embed: jahia.storylane.io/demo/{id} (in a modal dialog)
+
+All of it lives in src/utils/video.ts, covered by src/utils/video.test.ts.
 ```
 
 ## Build & Deploy Pipeline
@@ -220,28 +234,20 @@ External Video Component
 
 ### Parent → Child (Props)
 ```typescript
-// Server view passes data down
-<Hydrate 
-  component="VideoPlayer.island.client.tsx"
-  props={{ video, autoplay: false }}
-/>
+// Server view passes serializable data down
+<Island component={VideoModal} props={{ videos, headingLevel: itemLevel }} />
 ```
 
 ### Child → Parent (Callbacks)
 ```typescript
-// Client component uses callbacks
-interface Props {
-  onVideoPlay?: () => void;
-}
-
-// Usage
-<VideoPlayer onVideoPlay={() => console.log('Playing!')} />
+// Inside an island, children report back through callbacks
+<VideoCard video={video} onOpen={(opener) => open(video, opener)} />
 ```
 
 ### Global State (Context)
 ```typescript
 // Server context
-import { useServerContext } from '@jahia/javascript-modules-library/server';
+import { useServerContext } from '@jahia/javascript-modules-library';
 const { locale, site } = useServerContext();
 ```
 
