@@ -1,11 +1,7 @@
-import {
-  jahiaComponent,
-  AddResources,
-  buildModuleFileUrl,
-  getChildNodes,
-  Render,
-} from "@jahia/javascript-modules-library";
-import type { VideoGalleryProps } from "./types";
+import { getChildNodes, jahiaComponent, Render } from "@jahia/javascript-modules-library";
+import { headingLevel } from "../../utils/jcr.js";
+import GalleryFrame from "./GalleryFrame.js";
+import type { VideoGalleryProps } from "./types.js";
 import classes from "./VideoGallery.module.css";
 
 export default jahiaComponent(
@@ -15,28 +11,29 @@ export default jahiaComponent(
     name: "default",
     displayName: "Default View",
   },
-  (props: VideoGalleryProps, { currentNode }) => {
+  (props: VideoGalleryProps, { currentNode, currentResource }) => {
     const { "jcr:title": title, bannerText } = props;
-
-    // Get all child video nodes
+    const level = headingLevel(currentResource, 2);
     const childNodes = getChildNodes(currentNode, -1, 0);
-
     return (
-      <>
-        <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
-        <div className={classes.root}>
-          {title && <h2 className={classes.title}>{title}</h2>}
-          {bannerText && (
-            <div className={classes.banner} dangerouslySetInnerHTML={{ __html: bannerText }} />
-          )}
-
-          <div className={classes.defaultGallery}>
-            {childNodes.map((childNode) => (
-              <Render key={childNode.getIdentifier()} node={childNode} view="gallery" />
-            ))}
-          </div>
-        </div>
-      </>
+      <GalleryFrame
+        title={title}
+        bannerText={bannerText}
+        level={level}
+        isEmpty={childNodes.length === 0}
+      >
+        <ul className={classes.defaultGallery}>
+          {childNodes.map((childNode) => (
+            <li key={childNode.getIdentifier()} className={classes.defaultGalleryItem}>
+              <Render
+                node={childNode}
+                view="gallery"
+                parameters={{ headingLevel: String(title ? level + 1 : level) }}
+              />
+            </li>
+          ))}
+        </ul>
+      </GalleryFrame>
     );
   },
 );

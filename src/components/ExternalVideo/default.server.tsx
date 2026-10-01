@@ -1,14 +1,9 @@
-import {
-  jahiaComponent,
-  Island,
-  server,
-  buildNodeUrl,
-  AddResources,
-  buildModuleFileUrl,
-} from "@jahia/javascript-modules-library";
-import type { ExternalVideoProps } from "./types";
-import classes from "./ExternalVideo.module.css";
-import ExternalVideoPlayer from "./ExternalVideoPlayer.island.client";
+import { Island, jahiaComponent } from "@jahia/javascript-modules-library";
+import { useTranslation } from "react-i18next";
+import VideoBlock from "../../utils/VideoBlock.js";
+import { headingLevel, videoData } from "../../utils/jcr.js";
+import ExternalVideoPlayer from "./ExternalVideoPlayer.island.client.js";
+import type { ExternalVideoProps } from "./types.js";
 
 export default jahiaComponent(
   {
@@ -17,58 +12,21 @@ export default jahiaComponent(
     name: "default",
     displayName: "External Video",
   },
-  (props: ExternalVideoProps, { renderContext }) => {
-    const { "jcr:title": title, videoDesc, videoService, videoId, videoPoster } = props;
-
-    // CRITICAL: Handle JCR nodes OR plain objects
-    let posterUrl = undefined;
-
-    if (videoPoster) {
-      if (videoPoster.getPath && typeof videoPoster.getPath === "function") {
-        server.render.addCacheDependency({ node: videoPoster }, renderContext);
-        posterUrl = buildNodeUrl(videoPoster);
-      } else if (videoPoster.path) {
-        posterUrl = `/files/default${videoPoster.path}`;
-      }
-    }
-
-    if (!videoId) {
-      return (
-        <>
-          <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
-          <div className={classes.root}>
-            <p className={classes.noVideo}>No video ID provided</p>
-          </div>
-        </>
-      );
-    }
-
+  (props: ExternalVideoProps, { currentNode, currentResource, renderContext }) => {
+    const { t } = useTranslation("js-media-gallery");
+    const video = videoData(currentNode, renderContext, currentResource.getLocale().getLanguage());
+    const playable = Boolean(video?.videoService && video.videoId);
     return (
-      <>
-        <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
-        <div className={classes.root}>
-          {title && <h3 className={classes.title}>{title}</h3>}
-          {videoDesc && <p className={classes.description}>{videoDesc}</p>}
-          <div className={classes.videoContainer}>
-            <Island
-              component={ExternalVideoPlayer}
-              props={{
-                videoService,
-                videoId,
-                posterUrl,
-                title,
-                videoDesc,
-              }}
-            >
-              <div className={classes.videoFallback}>
-                {posterUrl && (
-                  <img src={posterUrl} alt={title || "Video"} className={classes.posterImage} />
-                )}
-              </div>
-            </Island>
-          </div>
-        </div>
-      </>
+      <VideoBlock
+        title={props["jcr:title"]}
+        description={props.videoDesc}
+        transcript={props.transcript}
+        level={headingLevel(currentResource, 3)}
+        variant="default"
+        emptyMessage={playable ? undefined : t("mediaGallery.externalVideo.noVideoId")}
+      >
+        {video && playable && <Island component={ExternalVideoPlayer} props={{ video }} />}
+      </VideoBlock>
     );
   },
 );

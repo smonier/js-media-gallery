@@ -1,95 +1,185 @@
-/* ImageGallery Root */
+/* Image gallery. Colours come from the tokens of utils/ui.module.css. */
 .root {
+  box-sizing: border-box;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 0;
 }
 
+/* On the host page: the host's text colour unless --jsmg-color-page-text is set. */
 .title {
+  margin: 0 0 1rem;
+  color: var(--jsmg-color-page-text, currentColor);
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 1rem;
-  color: #1a1a1a;
+  line-height: 1.2;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .banner {
   margin-bottom: 2rem;
-  text-align: center;
-  color: #666;
+  color: var(--jsmg-color-page-text, currentColor);
   font-size: 1.125rem;
   line-height: 1.6;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
-/* Grid View */
-.grid {
+.noImages {
+  padding: 4rem 1rem;
+  color: var(--jsmg-color-page-text, currentColor);
+  font-size: 1.125rem;
+  text-align: center;
+}
+
+/* ---- Grid and masonry ---------------------------------------------------------------------- */
+.grid,
+.masonry {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 2rem;
+  margin: 0;
   padding: 1rem 0;
+  list-style: none;
+  /* Never wider than the container, down to 320 px (RGAA 10.11). */
+  grid-template-columns: repeat(auto-fill, minmax(min(300px, 100%), 1fr));
 }
 
-.gridItem {
-  background: #fff;
-  border-radius: 8px;
-  border-color: transparent !important;
+.masonry {
+  gap: 1.5rem;
+  grid-auto-rows: 200px;
+  grid-auto-flow: dense;
+}
+
+.gridItem,
+.masonryItem {
+  min-width: 0;
+  border-radius: var(--jsmg-radius);
+  background: var(--jsmg-color-surface);
+  color: var(--jsmg-color-text);
+  box-shadow: var(--jsmg-shadow-sm);
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition:
     transform 0.3s ease,
     box-shadow 0.3s ease;
 }
 
+.gridItem:hover,
+.masonryItem:hover {
+  box-shadow: var(--jsmg-shadow-md);
+}
+
 .gridItem:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.masonryItem .figure {
+  height: 100%;
+}
+
+.figure {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+}
+
+.imageLink {
+  position: relative;
+  display: block;
+  flex: 1 1 auto;
+  min-height: 0;
+  color: inherit;
+  text-decoration: none;
 }
 
 .imageWrapper {
   position: relative;
+  display: block;
   width: 100%;
-  padding-bottom: 75%; /* 4:3 aspect ratio */
+  aspect-ratio: 4 / 3;
   overflow: hidden;
-  background: #f5f5f5;
+  background: var(--jsmg-color-surface-sunken);
 }
 
-.image {
-  position: absolute;
-  top: 0;
-  left: 0;
+.image,
+.masonryImage {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.imageTitle {
-  font-size: 1.25rem;
+.image {
+  position: absolute;
+  inset: 0;
+}
+
+.masonryFrame {
+  display: block;
+  position: relative;
+  height: 100%;
+  min-height: 120px;
+}
+
+.imageOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: var(--jsmg-color-scrim);
+  color: var(--jsmg-color-on-overlay);
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.imageOverlay svg {
+  width: 32px;
+  height: 32px;
+}
+
+.imageLink:hover .imageOverlay,
+.imageLink:focus-visible .imageOverlay {
+  opacity: 1;
+}
+
+/* The ring of a link that holds a picture is drawn inside, so the card does not clip it. */
+.imageLink:focus-visible,
+.galleryMainLink:focus-visible,
+.galleryThumbButton:focus-visible {
+  outline-offset: -5px;
+  box-shadow: inset 0 0 0 7px var(--jsmg-color-focus-halo);
+}
+
+.caption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1rem;
+}
+
+.captionTitle {
+  color: var(--jsmg-color-text);
+  font-size: 1.125rem;
   font-weight: 600;
-  margin: 1rem 1rem 0.5rem;
-  color: #1a1a1a;
+  overflow-wrap: anywhere;
 }
 
-.imageDescription {
+.captionText {
+  color: var(--jsmg-color-text-muted);
   font-size: 0.938rem;
-  color: #666;
-  margin: 0 1rem 1rem;
   line-height: 1.5;
-}
-
-/* Masonry Layout */
-.masonry {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  grid-auto-rows: 200px;
-  grid-auto-flow: dense;
-  gap: 1.5rem;
-  padding: 1rem 0;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 1024px) {
   .masonry {
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     grid-auto-rows: 180px;
   }
 }
@@ -97,486 +187,66 @@
 @media (max-width: 640px) {
   .masonry {
     grid-template-columns: 1fr;
-    grid-auto-rows: 250px;
+    grid-auto-rows: auto;
+  }
+
+  .masonryFrame {
+    aspect-ratio: 4 / 3;
   }
 }
 
-.masonryItem {
-  background: #fff;
-  border-radius: 8px;
-  border-color: transparent !important;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease;
-  display: flex;
-  flex-direction: column;
-}
-
-.masonryItem:hover {
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.masonryImage {
-  width: 100%;
+/* ---- Viewer (modal dialog) ----------------------------------------------------------------- */
+.viewer {
   height: 100%;
-  object-fit: cover;
+}
+
+.viewerFigure {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 0;
+  margin: 0;
+}
+
+.viewerStage {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  justify-content: center;
+  min-height: 0;
+  border-radius: var(--jsmg-radius-lg);
+  background: var(--jsmg-color-media);
+  overflow: hidden;
+}
+
+.viewerImage {
   display: block;
-  flex-grow: 1;
-}
-
-.masonryCaption {
-  padding: 1rem;
-}
-
-.masonryTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
-  color: #1a1a1a;
-}
-
-.masonryDescription {
-  font-size: 0.938rem;
-  color: #666;
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* Carousel */
-.carousel {
-  position: relative;
-  width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-}
-
-.carouselMain {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.carouselImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.carouselCaption {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9), transparent);
-  color: #fff;
-  padding: 2rem 1.5rem 1.5rem;
-}
-
-.carouselTitle {
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 0 0.5rem;
-}
-
-.carouselDescription {
-  font-size: 1rem;
-  margin: 0;
-  line-height: 1.5;
-  opacity: 0.9;
-}
-
-.carouselButton {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 48px;
-  height: 48px;
-  font-size: 2rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.3s ease;
-  z-index: 10;
-}
-
-.carouselButton:hover {
-  background: #fff;
-}
-
-.carouselButtonPrev {
-  left: 1rem;
-}
-
-.carouselButtonNext {
-  right: 1rem;
-}
-
-.carouselDots {
-  display: flex;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-top: 1.5rem;
-}
-
-.carouselDot {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: #d1d5db;
-  border: none;
-  cursor: pointer;
-  transition: background 0.3s ease;
-  padding: 0;
-}
-
-.carouselDot:hover {
-  background: #9ca3af;
-}
-
-.carouselDotActive {
-  background: #1a1a1a;
-}
-
-.carouselFallback {
-  width: 100%;
-  padding-bottom: 56.25%;
-  position: relative;
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.carouselFallback img {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
-
-.carouselEmpty {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
-  font-size: 1.125rem;
-}
-
-/* Default View */
-.defaultGallery {
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  padding: 1rem 0;
-}
-
-.defaultItem {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  align-items: center;
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  margin: 0;
-  transition: box-shadow 0.3s ease;
-}
-
-.defaultItem:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
-}
-
-.defaultItem:nth-child(even) {
-  grid-template-columns: 1fr 1fr;
-}
-
-.defaultItem:nth-child(even) .defaultImageWrapper {
-  order: 2;
-}
-
-.defaultItem:nth-child(even) .defaultCaption {
-  order: 1;
-}
-
-.defaultImageWrapper {
-  position: relative;
-  width: 100%;
-  padding-bottom: 66.67%; /* 3:2 aspect ratio */
-  overflow: hidden;
-  background: #f5f5f5;
-}
-
-.defaultImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.defaultCaption {
-  padding: 2rem;
-}
-
-.defaultImageTitle {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-  color: #1a1a1a;
-  line-height: 1.3;
-}
-
-.defaultImageDescription {
-  font-size: 1.063rem;
-  color: #4b5563;
-  margin: 0;
-  line-height: 1.7;
-}
-
-.noImages {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
-  font-size: 1.125rem;
-}
-
-/* Image Modal */
-.imageButton {
-  position: relative;
-  cursor: pointer;
-  transition: transform 0.3s ease;
-}
-
-.imageButton:hover {
-  transform: translateY(-4px);
-}
-
-.imageOverlay {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 64px;
-  height: 64px;
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-  backdrop-filter: blur(4px);
-}
-
-.imageButton:hover .imageOverlay {
-  opacity: 1;
-}
-
-.imageModalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  animation: modalFadeIn 0.3s ease;
-}
-
-.imageModalContent {
-  background: #fff;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 1400px;
-  max-height: 90vh;
-  overflow: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  position: relative;
-  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.imageModalClose {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.imageModalClose:hover {
-  background: #fff;
-  transform: scale(1.1);
-}
-
-.imageModalNav {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.imageModalNav:hover {
-  background: #fff;
-  transform: translateY(-50%) scale(1.1);
-}
-
-.imageModalNavPrev {
-  left: 1rem;
-}
-
-.imageModalNavNext {
-  right: 1rem;
-}
-
-.imageModalImageWrapper {
-  position: relative;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #000;
-  border-radius: 16px 16px 0 0;
-  min-height: 400px;
+  max-width: 100%;
   max-height: 70vh;
-  overflow: hidden;
-}
-
-.imageModalImage {
-  width: 100%;
-  height: 100%;
   object-fit: contain;
-  display: block;
 }
 
-.imageModalInfo {
-  padding: 2rem;
-  background: linear-gradient(to bottom, #fafafa, #fff);
-  border-radius: 0 0 16px 16px;
+.viewerCaption {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
 }
 
-.imageModalTitle {
-  font-size: 1.75rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-  color: #1a1a1a;
-  line-height: 1.3;
+.viewerNav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
 }
 
-.imageModalDescription {
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.7;
+.viewerCounter {
   margin: 0;
-}
-
-.imageModalCounter {
-  position: absolute;
-  bottom: 1rem;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(255, 255, 255, 0.95);
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
+  color: var(--jsmg-color-on-overlay);
   font-weight: 600;
-  color: #333;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-@media (max-width: 768px) {
-  .defaultItem,
-  .defaultItem:nth-child(even) {
-    grid-template-columns: 1fr;
-  }
-
-  .defaultItem:nth-child(even) .defaultImageWrapper,
-  .defaultItem:nth-child(even) .defaultCaption {
-    order: initial;
-  }
-
-  .defaultCaption {
-    padding: 1.5rem;
-  }
-
-  .defaultImageTitle {
-    font-size: 1.5rem;
-  }
-
-  .imageModalOverlay {
-    padding: 1rem;
-  }
-
-  .imageModalContent {
-    border-radius: 12px;
-    max-height: 95vh;
-  }
-
-  .imageModalInfo {
-    padding: 1.5rem;
-  }
-
-  .imageModalTitle {
-    font-size: 1.5rem;
-  }
-
-  .imageModalDescription {
-    font-size: 0.938rem;
-  }
-
-  .imageModalNav {
-    width: 44px;
-    height: 44px;
-  }
-
-  .imageModalClose {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-/* Gallery View */
+/* ---- Gallery view: main image and thumbnails ----------------------------------------------- */
 .galleryView {
   width: 100%;
 }
@@ -586,185 +256,287 @@
   margin-bottom: 1rem;
 }
 
-.galleryMainButton {
-  width: 100%;
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
+.galleryMainLink {
+  position: relative;
   display: block;
-  border-radius: 8px;
+  border-radius: var(--jsmg-radius);
   overflow: hidden;
-  transition: all 0.2s ease-in;
+  transition:
+    transform 0.2s ease-in,
+    box-shadow 0.2s ease-in;
 }
 
-.galleryMainButton:hover {
+.galleryMainLink:hover {
   transform: scale(1.01);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--jsmg-shadow-md);
 }
 
 .galleryMainImage {
+  display: block;
   width: 100%;
   height: auto;
   max-height: 695px;
   object-fit: cover;
-  display: block;
 }
 
 .galleryThumbnails {
   display: flex;
-  flex-direction: row;
-  padding: 1rem 0;
-  margin: 0;
+  flex-wrap: wrap;
   gap: 1rem;
+  margin: 0;
+  padding: 1rem 0;
   list-style: none;
 }
 
 .galleryThumb {
   display: flex;
-  flex: 0 1 100%;
-  max-width: 100%;
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: calc((100% - 4rem) / 5);
 }
 
 .galleryThumbButton {
-  width: 100%;
-  border: none;
-  padding: 0;
-  background: transparent;
-  cursor: pointer;
   display: block;
-  border-radius: 8px;
+  width: 100%;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: var(--jsmg-radius);
+  background: transparent;
+  box-shadow: var(--jsmg-shadow-sm);
+  cursor: pointer;
   overflow: hidden;
-  transition: all 0.2s ease-in;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition:
+    transform 0.2s ease-in,
+    box-shadow 0.2s ease-in;
 }
 
 .galleryThumbButton:hover {
   transform: scale(1.01);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--jsmg-shadow-md);
+}
+
+/* The image shown as the main one. Not by colour alone: a thicker frame (RGAA 3.1). */
+.galleryThumbButton[aria-pressed="true"] {
+  border-color: var(--jsmg-color-accent, var(--primary, #1a1a1a));
 }
 
 .galleryThumbImage {
+  display: block;
   width: 100%;
   height: auto;
   aspect-ratio: 16 / 10;
   object-fit: cover;
-  display: block;
 }
 
 .galleryThumbMore {
   display: flex;
-  flex: 0 1 100%;
-  max-width: 100%;
-}
-
-.galleryThumbMore .galleryThumbButton {
-  background-color: #e5e7eb;
-  display: flex;
   align-items: center;
   justify-content: center;
+  height: 100%;
+  min-height: 3rem;
   aspect-ratio: 16 / 10;
+  background: var(--jsmg-color-surface-sunken);
 }
 
 .galleryMoreCount {
+  color: var(--jsmg-color-text);
   font-size: 1.5rem;
-  font-weight: bold;
-  color: #1a1a1a;
+  font-weight: 700;
 }
 
 .galleryThumbFadeIn {
-  animation: fadeIn 0.3s ease-in;
-  animation-fill-mode: both;
+  animation: fadeIn 0.3s ease-in both;
 }
 
-/* Gallery Dialog (Modal) */
-.galleryDialog {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 767px) {
+  .galleryThumb {
+    max-width: calc((100% - 1rem) / 2);
+  }
+}
+
+/* ---- Carousel ------------------------------------------------------------------------------- */
+.carousel,
+.carouselStrip {
   position: relative;
-  background: rgba(0, 0, 0, 0.95);
-  border-radius: 12px;
-  max-width: 90vw;
-  max-height: 90vh;
-  padding: 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.carouselToolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.carouselPlay {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--jsmg-color-text);
+  border-radius: 999px;
+  background: var(--jsmg-color-surface);
+  color: var(--jsmg-color-text);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.carouselPlay svg {
+  width: 20px;
+  height: 20px;
+}
+
+.carouselMain {
+  position: relative;
+  border-radius: var(--jsmg-radius-lg);
+  background: var(--jsmg-color-media);
+  overflow: hidden;
+}
+
+.carouselSlide,
+.carouselFigure {
+  margin: 0;
+}
+
+.carouselSlide[hidden] {
+  display: none;
+}
+
+.carouselImage {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: contain;
+  background: var(--jsmg-color-media);
+}
+
+/* Under the picture, on the dark frame: readable whatever the picture (RGAA 3.2). */
+.carouselCaption {
   display: flex;
   flex-direction: column;
-  backdrop-filter: blur(8px);
+  gap: 0.5rem;
+  padding: 1rem 1.5rem 1.25rem;
+  background: var(--jsmg-color-media);
+  color: var(--jsmg-color-on-overlay);
 }
 
-.galleryDialogTitle {
-  color: white;
-  font-size: 1.5rem;
-  margin: 0 0 1.5rem;
-  text-align: center;
-}
-
-.gallerySlideshow {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  min-height: 0;
-}
-
-.gallerySlideshowImageWrapper {
-  max-width: 80vw;
-  max-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.gallerySlideshowImage {
-  max-width: 100%;
-  max-height: 60vh;
-  object-fit: contain;
-  border-radius: 8px;
-}
-
-.gallerySlideshowInfo {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), transparent);
-  padding: 2rem 1rem 1rem;
-  color: white;
-}
-
-.gallerySlideshowTitle {
+.carouselTitle {
   font-size: 1.25rem;
-  margin: 0 0 0.5rem;
-  color: white;
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
-.gallerySlideshowDescription {
-  font-size: 0.938rem;
-  margin: 0;
-  color: rgba(255, 255, 255, 0.9);
+.carouselDescription {
+  color: var(--jsmg-color-on-overlay-muted);
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 
-/* Responsive thumbnails */
-@media (min-width: 576px) {
-  .galleryThumb,
-  .galleryThumbMore {
-    flex: 0 1 50%;
-    max-width: 50%;
+.carouselButton {
+  position: absolute;
+  top: calc((100% - 4rem) / 2);
+  z-index: 1;
+}
+
+.carouselButtonPrev {
+  left: 0.75rem;
+}
+
+.carouselButtonNext {
+  right: 0.75rem;
+}
+
+.carouselDots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* 44 px target around a small mark (WCAG 2.5.5). */
+.carouselDot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.carouselDotMark {
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--jsmg-color-page-text, currentColor);
+  border-radius: 50%;
+  background: transparent;
+}
+
+/* The current slide is filled, not only coloured (RGAA 3.1). */
+.carouselDot[aria-current="true"] .carouselDotMark {
+  background: var(--jsmg-color-page-text, currentColor);
+}
+
+/* Before hydration, without JavaScript and in edit mode: a strip that scrolls. */
+.carouselStripList {
+  display: grid;
+  grid-auto-columns: 100%;
+  grid-auto-flow: column;
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.carouselStripItem {
+  min-width: 0;
+  border-radius: var(--jsmg-radius-lg);
+  overflow: hidden;
+  scroll-snap-align: start;
+}
+
+.carouselStrip:focus-visible {
+  outline: 3px solid var(--jsmg-color-focus);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 2px var(--jsmg-color-focus-halo);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gridItem,
+  .masonryItem,
+  .imageOverlay,
+  .galleryMainLink,
+  .galleryThumbButton {
+    transition: none;
   }
-}
 
-@media (min-width: 768px) {
-  .galleryThumb,
-  .galleryThumbMore {
-    flex: 0 1 33.3333%;
-    max-width: 33.3333%;
+  .gridItem:hover,
+  .galleryMainLink:hover,
+  .galleryThumbButton:hover {
+    transform: none;
   }
-}
 
-@media (min-width: 1200px) {
-  .galleryThumb,
-  .galleryThumbMore {
-    flex: 0 1 20%;
-    max-width: 20%;
+  .galleryThumbFadeIn {
+    animation: none;
   }
 }

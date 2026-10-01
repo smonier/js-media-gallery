@@ -1,95 +1,186 @@
-import { useState, useEffect } from "react";
-import type { GalleryImage } from "./types";
+import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { NextIcon, PauseIcon, PlayIcon, PreviousIcon } from "../../utils/icons.js";
+import type { ImageData } from "../../utils/jcr.js";
+import ui from "../../utils/ui.module.css";
+import { imageAlt } from "./ImageViewer.js";
 import classes from "./ImageGallery.module.css";
 
 interface CarouselClientProps {
-  images: GalleryImage[];
+  images: ImageData[];
+  title?: string;
+  /** Edit mode: all slides side by side, no rotation. */
+  flat?: boolean;
 }
 
-export default function CarouselClient({ images }: CarouselClientProps) {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
+const DELAY_MS = 5000;
+
+/**
+ * Image carousel (RGAA 13.8 and the WAI-ARIA carousel pattern):
+ * - it rotates only when the visitor has not asked for reduced motion, and a visible button
+ *   pauses and restarts it; hovering or focusing the carousel pauses it too;
+ * - previous, next and the slide picker are named buttons; the slide shown is announced when the
+ *   visitor changes it (not while it rotates);
+ * - before hydration, without JavaScript and in edit mode, the slides are a scrollable strip.
+ */
+export default function CarouselClient({ images, title, flat = false }: CarouselClientProps) {
+  const { t } = useTranslation("js-media-gallery");
+  const [enhanced, setEnhanced] = useState(false);
+  const [current, setCurrent] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [paused, setPaused] = useState(false); // hover or focus inside
+  const [announce, setAnnounce] = useState(false);
+  const root = useRef<HTMLElement>(null);
+  const total = images.length;
 
   useEffect(() => {
-    if (!isAutoPlay || images.length <= 1) return;
+    if (flat) return;
+    setEnhanced(true);
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setPlaying(total > 1 && !reduce);
+  }, [flat, total]);
 
-    const interval = setInterval(() => {
-      setCurrentIndex((prev) => (prev + 1) % images.length);
-    }, 5000);
+  useEffect(() => {
+    if (!playing || paused || total < 2) return;
+    const timer = setInterval(() => setCurrent((index) => (index + 1) % total), DELAY_MS);
+    return () => clearInterval(timer);
+  }, [playing, paused, total]);
 
-    return () => clearInterval(interval);
-  }, [isAutoPlay, images.length]);
+  if (total === 0) return null;
 
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-    setIsAutoPlay(false);
+  const goTo = (index: number) => {
+    setCurrent((index + total) % total);
+    setPlaying(false);
+    setAnnounce(true);
   };
 
-  const goToPrevious = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-    setIsAutoPlay(false);
-  };
+  const label = title || t("mediaGallery.carousel.label");
 
-  const goToNext = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-    setIsAutoPlay(false);
-  };
-
-  if (images.length === 0) {
-    return <div className={classes.carouselEmpty}>No images available</div>;
+  if (!enhanced) {
+    return (
+      <section
+        className={classes.carouselStrip}
+        aria-label={label}
+        // A scrollable region must be reachable with the keyboard (WCAG 2.1.1).
+        tabIndex={0}
+      >
+        <ul className={classes.carouselStripList}>
+          {images.map((image, index) => (
+            <li key={`${image.url}-${index}`} className={classes.carouselStripItem}>
+              <figure className={classes.carouselFigure}>
+                <img
+                  src={image.url}
+                  alt={imageAlt(image, index, total, t)}
+                  className={classes.carouselImage}
+                />
+                {(image.title || image.description) && (
+                  <figcaption className={classes.carouselCaption}>
+                    {image.title && <span className={classes.carouselTitle}>{image.title}</span>}
+                    {image.description && (
+                      <span className={classes.carouselDescription}>{image.description}</span>
+                    )}
+                  </figcaption>
+                )}
+              </figure>
+            </li>
+          ))}
+        </ul>
+      </section>
+    );
   }
 
-  const currentImage = images[currentIndex];
-
   return (
-    <div className={classes.carousel}>
-      <div className={classes.carouselMain}>
-        <img
-          src={currentImage.url}
-          alt={currentImage.title || `Image ${currentIndex + 1}`}
-          className={classes.carouselImage}
-        />
-        {(currentImage.title || currentImage.description) && (
-          <div className={classes.carouselCaption}>
-            {currentImage.title && <h3 className={classes.carouselTitle}>{currentImage.title}</h3>}
-            {currentImage.description && (
-              <p className={classes.carouselDescription}>{currentImage.description}</p>
-            )}
+    <section
+      ref={root}
+      className={classes.carousel}
+      aria-roledescription={t("mediaGallery.carousel.roleDescription")}
+      aria-label={label}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(event) => {
+        if (!root.current?.contains(event.relatedTarget as Node | null)) setPaused(false);
+      }}
+    >
+      {total > 1 && (
+        <div className={classes.carouselToolbar}>
+          <button
+            type="button"
+            className={`${ui.control} ${classes.carouselPlay}`}
+            onClick={() => setPlaying((value) => !value)}
+          >
+            {playing ? <PauseIcon /> : <PlayIcon />}
+            <span>
+              {playing ? t("mediaGallery.carousel.pause") : t("mediaGallery.carousel.play")}
+            </span>
+          </button>
+        </div>
+      )}
+      <div className={classes.carouselMain} aria-live={announce && !playing ? "polite" : "off"}>
+        {images.map((image, index) => (
+          <div
+            key={`${image.url}-${index}`}
+            className={classes.carouselSlide}
+            role="group"
+            aria-roledescription={t("mediaGallery.carousel.slideRoleDescription")}
+            aria-label={t("mediaGallery.image.position", { index: index + 1, total })}
+            hidden={index !== current}
+          >
+            <figure className={classes.carouselFigure}>
+              <img
+                src={image.url}
+                alt={imageAlt(image, index, total, t)}
+                className={classes.carouselImage}
+              />
+              {(image.title || image.description) && (
+                <figcaption className={classes.carouselCaption}>
+                  {image.title && <span className={classes.carouselTitle}>{image.title}</span>}
+                  {image.description && (
+                    <span className={classes.carouselDescription}>{image.description}</span>
+                  )}
+                </figcaption>
+              )}
+            </figure>
           </div>
+        ))}
+        {total > 1 && (
+          <>
+            <button
+              type="button"
+              className={`${ui.control} ${ui.iconButton} ${classes.carouselButton} ${classes.carouselButtonPrev}`}
+              onClick={() => goTo(current - 1)}
+              aria-label={t("mediaGallery.carousel.previous")}
+            >
+              <PreviousIcon />
+            </button>
+            <button
+              type="button"
+              className={`${ui.control} ${ui.iconButton} ${classes.carouselButton} ${classes.carouselButtonNext}`}
+              onClick={() => goTo(current + 1)}
+              aria-label={t("mediaGallery.carousel.next")}
+            >
+              <NextIcon />
+            </button>
+          </>
         )}
       </div>
-
-      {images.length > 1 && (
-        <>
-          <button
-            className={`${classes.carouselButton} ${classes.carouselButtonPrev}`}
-            onClick={goToPrevious}
-            aria-label="Previous image"
-          >
-            ‹
-          </button>
-          <button
-            className={`${classes.carouselButton} ${classes.carouselButtonNext}`}
-            onClick={goToNext}
-            aria-label="Next image"
-          >
-            ›
-          </button>
-
-          <div className={classes.carouselDots}>
-            {images.map((_, index) => (
+      {total > 1 && (
+        <ul className={classes.carouselDots}>
+          {images.map((image, index) => (
+            <li key={`${image.url}-${index}`}>
               <button
-                key={index}
-                className={`${classes.carouselDot} ${
-                  index === currentIndex ? classes.carouselDotActive : ""
-                }`}
-                onClick={() => goToSlide(index)}
-                aria-label={`Go to image ${index + 1}`}
-              />
-            ))}
-          </div>
-        </>
+                type="button"
+                className={`${ui.control} ${classes.carouselDot}`}
+                onClick={() => goTo(index)}
+                aria-label={t("mediaGallery.carousel.goTo", { index: index + 1 })}
+                aria-current={index === current ? "true" : undefined}
+              >
+                <span className={classes.carouselDotMark} aria-hidden="true" />
+              </button>
+            </li>
+          ))}
+        </ul>
       )}
-    </div>
+    </section>
   );
 }

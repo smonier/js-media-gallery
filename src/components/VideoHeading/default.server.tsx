@@ -1,11 +1,15 @@
 import {
-  jahiaComponent,
-  server,
-  buildNodeUrl,
   AddResources,
   buildModuleFileUrl,
+  Island,
+  jahiaComponent,
 } from "@jahia/javascript-modules-library";
-import type { VideoHeadingProps } from "./types";
+import { useTranslation } from "react-i18next";
+import RichText from "../../utils/RichText.js";
+import { fileMimeType, fileUrl, headingLevel, headingTag, resolveLink } from "../../utils/jcr.js";
+import ui from "../../utils/ui.module.css";
+import HeroVideo from "./HeroVideo.island.client.js";
+import type { VideoHeadingProps } from "./types.js";
 import classes from "./VideoHeading.module.css";
 
 export default jahiaComponent(
@@ -15,47 +19,54 @@ export default jahiaComponent(
     name: "default",
     displayName: "Video Hero Banner",
   },
-  (props: VideoHeadingProps, { renderContext }) => {
-    const { "jcr:title": title, video, caption, linkUrl, linkText } = props;
-
-    // CRITICAL: video can be a JCR node OR an object with path property
-    let videoUrl = undefined;
-
-    if (video) {
-      if (video.getPath && typeof video.getPath === "function") {
-        // video is a JCR node - use buildNodeUrl
-        server.render.addCacheDependency({ node: video }, renderContext);
-        videoUrl = buildNodeUrl(video);
-      } else if (video.path) {
-        // video is an object with path property
-        videoUrl = `/files/default${video.path}`;
-      }
-    }
+  (props: VideoHeadingProps, { currentNode, currentResource, renderContext }) => {
+    const { t } = useTranslation("js-media-gallery");
+    const { "jcr:title": title, caption, ctaLabel } = props;
+    const videoUrl = fileUrl(props.video, renderContext);
+    const posterUrl = fileUrl(props.videoPoster, renderContext);
+    const link = resolveLink(props as Record<string, unknown>, renderContext);
+    // The page template owns the only h1: the hero title is a section heading (RGAA 9.1).
+    const level = headingLevel(currentResource, 2);
+    const Heading = headingTag(level);
+    const headingId = `jsmg-hero-${currentNode.getIdentifier()}`;
 
     return (
       <>
         <AddResources type="css" resources={buildModuleFileUrl("dist/assets/style.css")} />
-        <section className={classes.hero}>
+        <section className={classes.hero} aria-labelledby={title ? headingId : undefined}>
           <div className={classes.videoBackground}>
             {videoUrl ? (
-              <video className={classes.video} autoPlay muted loop playsInline>
-                <source src={videoUrl} type="video/mp4" />
-              </video>
+              <Island
+                component={HeroVideo}
+                props={{ src: videoUrl, mimeType: fileMimeType(props.video), posterUrl }}
+              />
+            ) : posterUrl ? (
+              <img src={posterUrl} alt="" className={classes.video} />
             ) : (
-              <div className={classes.placeholder}>No video selected</div>
+              <div className={classes.placeholder} />
             )}
             <div className={classes.overlay} />
           </div>
 
           <div className={classes.content}>
             <div className={classes.textWrapper}>
-              {title && <h1 className={classes.title}>{title}</h1>}
-              {caption && (
-                <div className={classes.caption} dangerouslySetInnerHTML={{ __html: caption }} />
+              {title && (
+                <Heading id={headingId} className={classes.title}>
+                  {title}
+                </Heading>
               )}
-              {linkUrl && linkText && (
-                <a href={linkUrl} className={classes.cta}>
-                  {linkText}
+              <RichText html={caption} className={classes.caption} headingLevel={level + 1} />
+              {link && ctaLabel && (
+                <a
+                  href={link.href}
+                  className={`${ui.control} ${classes.cta}`}
+                  target={link.newWindow ? "_blank" : undefined}
+                  rel={link.newWindow ? "noopener noreferrer" : undefined}
+                >
+                  {ctaLabel}
+                  {link.newWindow && (
+                    <span className={ui.visuallyHidden}> {t("mediaGallery.common.newWindow")}</span>
+                  )}
                 </a>
               )}
             </div>

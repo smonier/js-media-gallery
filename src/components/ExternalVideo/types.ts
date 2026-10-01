@@ -1,8 +1,10 @@
 export interface ExternalVideoProps {
   "jcr:title"?: string;
   "videoDesc"?: string;
-  "videoService": "youtube" | "vimeo" | "wistia" | "dailymotion" | "storylane";
+  "videoService"?: string;
   "videoId"?: string;
-  "videoPoster"?: any; // Can be JCR node or object with path
+  /** Poster image node. */
+  "videoPoster"?: unknown;
+  "transcript"?: string;
   "featured"?: boolean;
 }

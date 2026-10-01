@@ -1,669 +1,260 @@
-/* VideoGallery Root */
+/* Video gallery. Colours come from the tokens of utils/ui.module.css. */
 .root {
+  box-sizing: border-box;
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
-  padding: 2rem 1rem;
+  padding: 2rem 0;
 }
 
+/* On the host page: the host's text colour unless --jsmg-color-page-text is set. */
 .title {
+  margin: 0 0 1rem;
+  color: var(--jsmg-color-page-text, currentColor);
   font-size: 2.5rem;
   font-weight: 700;
-  margin-bottom: 1rem;
-  color: #1a1a1a;
+  line-height: 1.2;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .banner {
   margin-bottom: 2rem;
-  text-align: center;
-  color: #666;
+  color: var(--jsmg-color-page-text, currentColor);
   font-size: 1.125rem;
   line-height: 1.6;
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
-/* Featured View */
-.featuredSection {
-  margin-bottom: 3rem;
+.empty {
+  padding: 4rem 1rem;
+  color: var(--jsmg-color-page-text, currentColor);
+  font-size: 1.125rem;
+  text-align: center;
 }
 
-.featuredTitle {
-  font-size: 1.75rem;
+/* ---- Default view: the gallery item view of each video ------------------------------------- */
+.defaultGallery {
+  display: grid;
+  gap: 2rem;
+  margin: 0;
+  padding: 1rem 0;
+  list-style: none;
+  grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr));
+}
+
+.defaultGalleryItem {
+  min-width: 0;
+}
+
+/* ---- Cards (grid view) and thumbnails (featured view) ------------------------------------- */
+.videoGrid {
+  display: grid;
+  gap: 1.5rem;
+  margin: 0;
+  padding: 1rem 0;
+  list-style: none;
+  /* --item-width is set by the editor; a card never gets wider than the container (RGAA 10.11). */
+  grid-template-columns: repeat(auto-fill, minmax(min(var(--item-width, 250px), 100%), 1fr));
+}
+
+.gridVideoCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  border-radius: var(--jsmg-radius);
+  background: var(--jsmg-color-surface);
+  color: var(--jsmg-color-text);
+  box-shadow: var(--jsmg-shadow-sm);
+  overflow: hidden;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
+}
+
+.gridVideoCard:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--jsmg-shadow-md);
+}
+
+.thumbLink {
+  display: block;
+  color: inherit;
+}
+
+.thumbFrame {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: var(--jsmg-color-media);
+  overflow: hidden;
+}
+
+.thumbImage {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* White disc, dark mark (3:1 on any picture, RGAA 3.3); the ring takes the host accent. */
+.playBadge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border: 3px solid var(--jsmg-color-accent, var(--primary, #1565c0));
+  border-radius: 50%;
+  background: var(--jsmg-color-control);
+  color: var(--jsmg-color-on-control);
+  box-shadow: var(--jsmg-shadow-md);
+  transform: translate(-50%, -50%);
+  transition: transform 0.3s ease;
+}
+
+.playBadge svg {
+  width: 24px;
+  height: 24px;
+  margin-left: 3px;
+}
+
+.thumbLink:hover .playBadge,
+.thumbLink:focus-visible .playBadge,
+.stripButton:hover .playBadge {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+/* The ring of a control that holds a picture is drawn inside, so the card does not clip it. */
+.thumbLink:focus-visible {
+  outline-offset: -5px;
+  box-shadow: inset 0 0 0 7px var(--jsmg-color-focus-halo);
+}
+
+.cardBody {
+  padding: 1rem;
+}
+
+.cardTitle {
+  margin: 0 0 0.5rem;
+  color: var(--jsmg-color-text);
+  font-size: 1.125rem;
   font-weight: 600;
-  margin-top: 1rem;
-  color: #1a1a1a;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
-/* Featured TV Layout */
+.cardText {
+  margin: 0;
+  color: var(--jsmg-color-text-muted);
+  font-size: 0.938rem;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+/* ---- Featured view ----------------------------------------------------------------------- */
 .featuredLayout {
   display: grid;
-  grid-template-columns: 9fr 3fr;
-  grid-template-rows: auto auto;
+  grid-template-columns: minmax(0, 3fr) minmax(0, 1fr);
   gap: 1.5rem;
   margin-bottom: 2rem;
 }
 
 .featuredMain {
-  grid-column: 1;
-  grid-row: 1;
-}
-
-.featuredVideoWrapper {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  background: #000;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  min-width: 0;
 }
 
 .featuredDescription {
-  grid-column: 2;
-  grid-row: 1;
+  min-width: 0;
   padding: 1.5rem;
-  background: #f8f9fa;
-  border-radius: 12px;
-  overflow-y: auto;
-  max-height: 600px;
+  border-radius: var(--jsmg-radius-lg);
+  background: var(--jsmg-color-surface-sunken);
+  color: var(--jsmg-color-text);
 }
 
-.featuredVideoTitle {
+.featuredDescription .cardTitle {
   font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0 0 1rem 0;
-  color: #1a1a1a;
-  line-height: 1.3;
 }
 
-.featuredVideoDesc {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: #555;
-}
-
-.featuredEmpty {
-  padding: 4rem 2rem;
-  text-align: center;
-  color: #999;
-  font-size: 1.125rem;
-}
-
-/* Thumbnail Carousel */
-.featuredCarousel {
+.strip {
+  display: flex;
   grid-column: 1 / -1;
-  grid-row: 2;
-  overflow: hidden;
-}
-
-.carouselTrack {
-  display: flex;
   gap: 1rem;
-  overflow-x: auto;
-  padding: 1rem 0;
-  scroll-behavior: smooth;
-  -webkit-overflow-scrolling: touch;
-}
-
-.carouselTrack::-webkit-scrollbar {
-  height: 8px;
-}
-
-.carouselTrack::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.carouselTrack::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 4px;
-}
-
-.carouselTrack::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}
-
-.carouselThumbnail {
-  flex: 0 0 200px;
-  width: 200px;
-  max-width: 200px;
-  min-width: 200px;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.carouselThumbnail:hover {
-  transform: scale(1.05);
-}
-
-.carouselThumbnailActive {
-  position: relative;
-}
-
-.thumbnailWrapper {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-  background: #000;
-}
-
-.carouselThumbnailActive .thumbnailWrapper {
-  box-shadow: 0 0 0 3px #007bff;
-}
-
-.thumbnailImage {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  display: block !important;
-}
-
-.thumbnailPlaceholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #2a2a2a;
-  color: #666;
-}
-
-.thumbnailTitle {
-  display: block;
-  margin-top: 0.5rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  color: #333;
-  text-align: center;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Grid View */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--item-width, 250px), 1fr));
-  gap: 2rem;
-  padding: 1rem 0;
-}
-
-.gridItem {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.gridItem:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-}
-
-.videoTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 1rem;
-  color: #1a1a1a;
-  line-height: 1.4;
-}
-
-/* Video Player */
-.videoPlayer {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  background: #000;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.video,
-.videoIframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
-.videoThumbnail {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  overflow: hidden;
-  background: #000;
-}
-
-.thumbnailImage {
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100% !important;
-  height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
-  object-fit: cover !important;
-  object-position: center !important;
-  display: block !important;
-}
-
-.videoPreview {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  cursor: pointer;
-}
-
-.playButton {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 50px;
-  height: 50px;
-  background: var(--primary);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 50%;
-  cursor: pointer;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-  color: var(--primary);
-}
-
-.playButton:hover {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: var(--primary-rgb);
-  transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
-}
-
-.videoFallback {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  background: #000;
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.posterImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-/* Default View */
-.defaultGallery {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-  gap: 2.5rem;
-  padding: 1rem 0;
-}
-
-.defaultVideoItem {
-  background: #fff;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.defaultVideoItem:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-}
-
-.videoPlaceholder {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 */
-  background: #000;
-  overflow: hidden;
-}
-
-.placeholderImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.defaultVideoTitle {
-  font-size: 1.25rem;
-  font-weight: 600;
-  padding: 1.25rem;
   margin: 0;
-  color: #1a1a1a;
+  padding: 0.5rem 0.25rem 1rem;
+  list-style: none;
+  overflow-x: auto;
 }
 
-.noVideos {
-  text-align: center;
-  padding: 4rem 2rem;
-  color: #666;
-  font-size: 1.125rem;
+.stripItem {
+  flex: 0 0 200px;
+  max-width: 70%;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .title {
-    font-size: 2rem;
-  }
-
-  .grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
-  }
-
-  .featuredTitle {
-    font-size: 1.5rem;
-  }
-
-  .defaultGallery {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
-  }
-
-  /* Featured TV Layout - Stack on mobile */
-  .featuredLayout {
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-  }
-
-  .featuredMain {
-    grid-column: 1;
-    grid-row: 1;
-  }
-
-  .featuredDescription {
-    grid-column: 1;
-    grid-row: 2;
-    max-height: 300px;
-  }
-
-  .featuredCarousel {
-    grid-column: 1;
-    grid-row: 3;
-  }
-
-  .carouselThumbnail {
-    flex: 0 0 150px;
-  }
-}
-
-/* Video Grid with Modal */
-.videoGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(var(--item-width, 250px), 1fr));
-  gap: 2rem;
-  padding: 1rem 0;
-}
-
-.gridVideoCard {
-  background: #fff;
-  border: none;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-  cursor: pointer;
-  padding: 0;
-  text-align: left;
+.stripButton {
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
-
-.gridVideoCard:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-}
-
-.gridThumbnailWrapper {
-  position: relative;
+  gap: 0.5rem;
   width: 100%;
-  padding-bottom: 56.25%;
-  overflow: hidden;
-  background: #000;
-}
-
-.gridThumbnail {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
-}
-
-.gridVideoCard:hover .gridThumbnail {
-  transform: scale(1.05);
-}
-
-.gridPlaceholder {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #2a2a2a;
-  color: #666;
-}
-
-.gridVideoCard:hover .playButton {
-  background: rgba(255, 255, 255, 0.25);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translate(-50%, -50%) scale(1.15);
-  box-shadow: 0 12px 48px rgba(0, 0, 0, 0.3);
-}
-
-.gridVideoTitle {
-  font-size: 1.125rem;
-  font-weight: 600;
-  margin: 0;
-  padding: 1rem 1rem 0.5rem 1rem;
-  color: #1a1a1a;
-  line-height: 1.4;
-}
-
-.gridVideoDescription {
-  font-size: 0.875rem;
-  color: #666;
-  margin: 0;
-  padding: 0 1rem 1rem 1rem;
-  line-height: 1.5;
-  flex-grow: 1;
-}
-
-/* Modal */
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(8px);
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 2rem;
-  animation: modalFadeIn 0.3s ease;
-}
-
-@keyframes modalFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-.modalContent {
-  background: #fff;
-  border-radius: 16px;
-  width: 100%;
-  max-width: 1200px;
-  max-height: 90vh;
-  overflow: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-  position: relative;
-  animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-@keyframes modalSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(40px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.modalClose {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.95);
-  border: none;
+  padding: 0;
+  border: 3px solid transparent;
+  border-radius: var(--jsmg-radius);
+  background: var(--jsmg-color-surface);
+  color: var(--jsmg-color-text);
+  font: inherit;
+  text-align: left;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  transition:
-    background 0.2s ease,
-    transform 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.modalClose:hover {
-  background: #fff;
-  transform: scale(1.1);
-}
-
-.modalVideoWrapper {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%;
-  background: #000;
-  border-radius: 16px 16px 0 0;
   overflow: hidden;
 }
 
-.modalVideo {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
+/* The video shown: a frame and a bold title, not colour alone (RGAA 3.1). */
+.stripButton[aria-pressed="true"] {
+  border-color: var(--jsmg-color-accent, var(--primary, #1a1a1a));
 }
 
-.modalInfo {
-  padding: 2rem;
-  background: linear-gradient(to bottom, #fafafa, #fff);
-  border-radius: 0 0 16px 16px;
-}
-
-.modalTitle {
-  font-size: 1.75rem;
+.stripButton[aria-pressed="true"] .stripTitle {
   font-weight: 700;
-  margin: 0 0 1rem;
-  color: #1a1a1a;
-  line-height: 1.3;
 }
 
-.modalDescription {
-  font-size: 1rem;
-  color: #555;
-  line-height: 1.7;
-  margin: 0;
+.stripTitle {
+  padding: 0 0.5rem 0.5rem;
+  font-size: 0.938rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
-.modalDescription p {
-  margin: 0 0 0.75rem;
-}
-
-.modalDescription p:last-child {
-  margin-bottom: 0;
+.transcripts {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  color: var(--jsmg-color-page-text, currentColor);
 }
 
 @media (max-width: 768px) {
-  .modal {
-    padding: 1rem;
+  .featuredLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gridVideoCard,
+  .playBadge {
+    transition: none;
   }
 
-  .videoGrid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-    gap: 1rem;
+  .gridVideoCard:hover {
+    transform: none;
   }
 
-  .modalContent {
-    border-radius: 12px;
-    max-height: 95vh;
-  }
-
-  .modalInfo {
-    padding: 1.5rem;
-  }
-
-  .modalTitle {
-    font-size: 1.5rem;
-  }
-
-  .modalDescription {
-    font-size: 0.938rem;
-  }
-
-  .modalClose {
-    width: 36px;
-    height: 36px;
+  .thumbLink:hover .playBadge,
+  .thumbLink:focus-visible .playBadge,
+  .stripButton:hover .playBadge {
+    transform: translate(-50%, -50%);
   }
 }

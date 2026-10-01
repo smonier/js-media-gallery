@@ -1,169 +1,89 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import VideoFrame from "../../utils/VideoFrame.js";
+import { PlayIcon } from "../../utils/icons.js";
+import useThumbnail from "../../utils/useThumbnail.js";
+import type { VideoData } from "../../utils/video.js";
+import ui from "../../utils/ui.module.css";
 import classes from "./VideoGallery.module.css";
-import { getEmbedUrl, getServiceThumbnail } from "../../utils/video";
-
-interface VideoData {
-  id: string;
-  title: string;
-  description?: string;
-  videoUrl?: string;
-  posterUrl?: string;
-  videoService?: string;
-  videoId?: string;
-  isExternal: boolean;
-}
 
 interface FeaturedGalleryProps {
   videos: VideoData[];
+  /** Level of the title of the video shown. */
+  headingLevel: number;
 }
 
-export default function FeaturedGallery({ videos }: FeaturedGalleryProps) {
-  const [activeIndex, setActiveIndex] = useState(0);
+interface ThumbnailProps {
+  video: VideoData;
+  active: boolean;
+  onSelect: () => void;
+}
 
-  // Debug logging
-  console.log(
-    "Client received videos:",
-    videos.map((v) => ({
-      title: v.title,
-      isExternal: v.isExternal,
-      videoService: v.videoService,
-      videoId: v.videoId,
-      hasPoster: !!v.posterUrl,
-      posterUrl: v.posterUrl,
-    })),
+function Thumbnail({ video, active, onSelect }: ThumbnailProps) {
+  const { t } = useTranslation("js-media-gallery");
+  const thumbnail = useThumbnail(video);
+  return (
+    <li className={classes.stripItem}>
+      <button
+        type="button"
+        className={`${ui.control} ${classes.stripButton}`}
+        onClick={onSelect}
+        aria-pressed={active}
+      >
+        <span className={classes.thumbFrame}>
+          {thumbnail && (
+            <img src={thumbnail} alt="" className={classes.thumbImage} loading="lazy" />
+          )}
+          <span className={classes.playBadge} aria-hidden="true">
+            <PlayIcon />
+          </span>
+        </span>
+        <span className={classes.stripTitle}>
+          {video.title || t("mediaGallery.video.untitled")}
+        </span>
+      </button>
+    </li>
   );
+}
 
-  if (!videos || videos.length === 0) {
-    return (
-      <div className={classes.featuredEmpty}>
-        <p>No videos available</p>
-      </div>
-    );
-  }
-
-  const activeVideo = videos[activeIndex];
-
-  // Get thumbnail URL with priority: custom poster > service thumbnail > placeholder
-  const getThumbnailUrl = (video: VideoData) => {
-    if (video.posterUrl) {
-      return video.posterUrl;
-    }
-    if (video.isExternal) {
-      const serviceThumbnail = getServiceThumbnail(video.videoService, video.videoId);
-      console.log(
-        `Service thumbnail for ${video.videoService} ${video.videoId}:`,
-        serviceThumbnail,
-      );
-      return serviceThumbnail;
-    }
-    return undefined;
-  };
+/** A featured player with the title and text of its video, and a strip of the other videos. */
+export default function FeaturedGallery({ videos, headingLevel }: FeaturedGalleryProps) {
+  const { t } = useTranslation("js-media-gallery");
+  const [activeIndex, setActiveIndex] = useState(0);
+  const [chosen, setChosen] = useState(false);
+  const active = videos[activeIndex] ?? videos[0];
+  if (!active) return null;
+  const Heading = `h${Math.min(6, Math.max(2, headingLevel))}` as "h3";
+  const title = active.title || t("mediaGallery.video.untitled");
 
   return (
     <div className={classes.featuredLayout}>
-      {/* Main Video Section - 9/13 width */}
       <div className={classes.featuredMain}>
-        <div className={classes.featuredVideoWrapper}>
-          {activeVideo.isExternal ? (
-            <iframe
-              className={classes.videoIframe}
-              src={getEmbedUrl(activeVideo.videoService || "", activeVideo.videoId || "")}
-              title={activeVideo.title || "Video"}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            />
-          ) : (
-            <video
-              className={classes.video}
-              controls
-              poster={activeVideo.posterUrl}
-              key={activeVideo.id}
-            >
-              <source src={activeVideo.videoUrl} type="video/mp4" />
-              Your browser does not support the video tag.
-            </video>
-          )}
+        <div className={ui.playerFrame}>
+          <VideoFrame key={active.id} video={active} className={ui.player} />
         </div>
       </div>
-
-      {/* Description Section - 3/13 width */}
       <div className={classes.featuredDescription}>
-        <h3 className={classes.featuredVideoTitle}>{activeVideo.title || "Untitled Video"}</h3>
-        {activeVideo.description && (
-          <div
-            className={classes.featuredVideoDesc}
-            dangerouslySetInnerHTML={{ __html: activeVideo.description }}
-          />
-        )}
+        <Heading className={classes.cardTitle}>{title}</Heading>
+        {active.description && <p className={classes.cardText}>{active.description}</p>}
+        <p className={ui.visuallyHidden} aria-live="polite">
+          {chosen ? t("mediaGallery.video.nowPlaying", { title }) : ""}
+        </p>
       </div>
-
-      {/* Thumbnail Carousel - Full Width Second Row */}
       {videos.length > 1 && (
-        <div className={classes.featuredCarousel}>
-          <div className={classes.carouselTrack}>
-            {videos.map((video, index) => {
-              const thumbnailUrl = getThumbnailUrl(video);
-
-              return (
-                <button
-                  key={video.id}
-                  type="button"
-                  className={`${classes.carouselThumbnail} ${index === activeIndex ? classes.carouselThumbnailActive : ""}`}
-                  onClick={() => setActiveIndex(index)}
-                  aria-label={`Play ${video.title || "video"}`}
-                >
-                  <div className={classes.thumbnailWrapper}>
-                    {thumbnailUrl ? (
-                      <img
-                        src={thumbnailUrl}
-                        alt={video.title || "Video thumbnail"}
-                        className={classes.thumbnailImage}
-                        style={{
-                          position: "absolute",
-                          top: 0,
-                          left: 0,
-                          width: "100%",
-                          height: "100%",
-                          objectFit: "cover",
-                          objectPosition: "center",
-                          display: "block",
-                        }}
-                      />
-                    ) : (
-                      <div className={classes.thumbnailPlaceholder}>
-                        <svg
-                          width="32"
-                          height="32"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.95" />
-                          <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" />
-                        </svg>
-                      </div>
-                    )}
-                    {index === activeIndex && (
-                      <div className={classes.playButton}>
-                        <svg
-                          width="32"
-                          height="32"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <circle cx="12" cy="12" r="10" fill="white" fillOpacity="0.95" />
-                          <path d="M10 8.5v7l6-3.5-6-3.5z" fill="currentColor" />
-                        </svg>
-                      </div>
-                    )}
-                  </div>
-                  {video.title && <span className={classes.thumbnailTitle}>{video.title}</span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
+        <ul className={classes.strip}>
+          {videos.map((video, index) => (
+            <Thumbnail
+              key={video.id}
+              video={video}
+              active={index === activeIndex}
+              onSelect={() => {
+                setActiveIndex(index);
+                setChosen(true);
+              }}
+            />
+          ))}
+        </ul>
       )}
     </div>
   );

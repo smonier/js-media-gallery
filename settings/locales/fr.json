@@ -29,7 +29,8 @@
         "youtube": "YouTube",
         "vimeo": "Vimeo",
         "wistia": "Wistia",
-        "dailymotion": "Dailymotion"
+        "dailymotion": "Dailymotion",
+        "storylane": "Storylane"
       }
     },
     "videoHeading": {
@@ -43,7 +44,48 @@
       "next": "Suivant",
       "close": "Fermer",
       "loading": "Chargement...",
-      "error": "Une erreur s'est produite"
+      "error": "Une erreur s'est produite",
+      "newWindow": "(ouvre une nouvelle fenêtre)"
+    },
+    "image": {
+      "untitled": "Image {{index}} sur {{total}}",
+      "viewFullSize": "afficher en grand",
+      "position": "Image {{index}} sur {{total}}",
+      "viewer": "Visionneuse d'images",
+      "previous": "Image précédente",
+      "next": "Image suivante",
+      "close": "Fermer la visionneuse d'images",
+      "show": "Afficher l'image {{index}}",
+      "more_one": "Voir {{count}} image de plus",
+      "more_other": "Voir {{count}} images de plus"
+    },
+    "carousel": {
+      "label": "Carrousel d'images",
+      "roleDescription": "carrousel",
+      "slideRoleDescription": "diapositive",
+      "pause": "Mettre le diaporama en pause",
+      "play": "Lancer le diaporama",
+      "goTo": "Afficher l'image {{index}}",
+      "previous": "Image précédente",
+      "next": "Image suivante"
+    },
+    "video": {
+      "untitled": "Vidéo sans titre",
+      "play": "Lire la vidéo : {{title}}",
+      "openDemo": "Ouvrir la démo interactive : {{title}}",
+      "frameTitle": "Vidéo {{service}} : {{title}}",
+      "demoFrameTitle": "Démo interactive Storylane : {{title}}",
+      "player": "Lecteur vidéo",
+      "close": "Fermer le lecteur vidéo",
+      "nowPlaying": "Vidéo affichée : {{title}}",
+      "unsupported": "Votre navigateur ne peut pas lire cette vidéo.",
+      "download": "Télécharger la vidéo",
+      "captions": "Sous-titres",
+      "transcript": "Transcription"
+    },
+    "hero": {
+      "pause": "Mettre en pause la vidéo d'arrière-plan",
+      "play": "Lire la vidéo d'arrière-plan"
     }
   }
 }

@@ -31,6 +31,17 @@ A comprehensive, modern media gallery module featuring image galleries and video
 - Centered video with responsive design
 - Perfect for landing pages
 
+## Accessibility (RGAA 4.1.2 / WCAG 2.1 AA)
+
+- Image text alternatives come from the **title** of each image in the media library. Give every image a title that describes it.
+- Images and video cards are links (to the full-size image, the video file or the provider's page), so they work without JavaScript. With JavaScript they open a modal viewer or player: native `<dialog>`, named, focus kept inside, Escape and the close button close it, focus returns to the link.
+- The carousel rotates only when the visitor has not asked for reduced motion, and has a visible pause button. In edit mode its slides are shown side by side.
+- The hero background video is muted, starts only with JavaScript and without reduced motion, and has a pause button.
+- Internal videos accept a **captions** file (WebVTT, one per language) and a **transcript**. External videos accept a transcript; turn their captions on at the provider.
+- The external video ID field also accepts the address of the video on the selected service.
+- Headings start at `h2` (galleries, hero) and follow the `headingLevel` Render parameter when a parent view passes one. Rich text headings are placed under the component heading.
+- Colours are CSS custom properties (`--jsmg-*`, see `src/utils/ui.module.css`) that a host theme can map. Text that sits on the host page takes the host's text colour.
+
 ## 🚀 Quick Start
 
 ```bash

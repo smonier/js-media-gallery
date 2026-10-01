@@ -1,6 +1,10 @@
-import { jahiaComponent, server, buildNodeUrl } from "@jahia/javascript-modules-library";
-import type { InternalVideoProps } from "./types";
-import classes from "./InternalVideo.module.css";
+import { jahiaComponent } from "@jahia/javascript-modules-library";
+import { useTranslation } from "react-i18next";
+import VideoBlock from "../../utils/VideoBlock.js";
+import VideoFrame from "../../utils/VideoFrame.js";
+import { headingLevel, videoData } from "../../utils/jcr.js";
+import ui from "../../utils/ui.module.css";
+import type { InternalVideoProps } from "./types.js";
 
 export default jahiaComponent(
   {
@@ -9,53 +13,24 @@ export default jahiaComponent(
     name: "gallery",
     displayName: "Gallery Item",
   },
-  (props: InternalVideoProps, { renderContext }) => {
-    const { "jcr:title": title, video, videoPoster } = props;
-
-    // CRITICAL: Handle JCR nodes OR plain objects
-    let videoUrl = undefined;
-    let posterUrl = undefined;
-
-    if (video) {
-      if (video.getPath && typeof video.getPath === "function") {
-        server.render.addCacheDependency({ node: video }, renderContext);
-        videoUrl = buildNodeUrl(video);
-      } else if (video.path) {
-        videoUrl = `/files/default${video.path}`;
-      }
-    }
-
-    if (videoPoster) {
-      if (videoPoster.getPath && typeof videoPoster.getPath === "function") {
-        server.render.addCacheDependency({ node: videoPoster }, renderContext);
-        posterUrl = buildNodeUrl(videoPoster);
-      } else if (videoPoster.path) {
-        posterUrl = `/files/default${videoPoster.path}`;
-      }
-    }
-
-    if (!videoUrl) {
-      return (
-        <div className={classes.galleryItem}>
-          <div className={classes.videoPlaceholder}>
-            <p className={classes.noVideo}>No video selected</p>
-          </div>
-        </div>
-      );
-    }
-
+  (props: InternalVideoProps, { currentNode, currentResource, renderContext }) => {
+    const { t } = useTranslation("js-media-gallery");
+    const video = videoData(currentNode, renderContext, currentResource.getLocale().getLanguage());
     return (
-      <div className={classes.galleryItem}>
-        <div className={classes.galleryVideoContainer}>
-          <video className={classes.video} controls poster={posterUrl}>
-            <source src={videoUrl} type="video/mp4" />
-            <source src={videoUrl} type="video/webm" />
-            <source src={videoUrl} type="video/ogg" />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-        {title && <h4 className={classes.galleryTitle}>{title}</h4>}
-      </div>
+      <VideoBlock
+        title={props["jcr:title"]}
+        description={props.videoDesc}
+        transcript={props.transcript}
+        level={headingLevel(currentResource, 3)}
+        variant="item"
+        emptyMessage={video?.videoUrl ? undefined : t("mediaGallery.internalVideo.noVideo")}
+      >
+        {video?.videoUrl && (
+          <div className={ui.playerFrame}>
+            <VideoFrame video={video} className={ui.player} />
+          </div>
+        )}
+      </VideoBlock>
     );
   },
 );
