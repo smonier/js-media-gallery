@@ -23,8 +23,17 @@ export interface VideoData {
   /** External video: validated provider and identifier. */
   videoService?: VideoService;
   videoId?: string;
+  /** Vimeo only: the key of an unlisted video, needed to play it. */
+  videoHash?: string;
   posterUrl?: string;
   featured?: boolean;
+}
+
+/** A video of a provider, as read from what the editor typed. */
+export interface ParsedVideo {
+  id: string;
+  /** Vimeo only: the key of an unlisted video. */
+  hash?: string;
 }
 
 const ID_FORMATS: Record<VideoService, RegExp> = {
@@ -34,6 +43,9 @@ const ID_FORMATS: Record<VideoService, RegExp> = {
   dailymotion: /^[a-zA-Z0-9]{5,12}$/,
   storylane: /^[a-z0-9]{8,20}$/,
 };
+
+/** Key of an unlisted Vimeo video (`vimeo.com/<id>/<key>` or `?h=<key>`). */
+const VIMEO_HASH = /^[0-9a-f]{6,20}$/;
 
 const HOSTS: Record<VideoService, string[]> = {
   youtube: [
@@ -49,8 +61,20 @@ const HOSTS: Record<VideoService, string[]> = {
   storylane: ["app.storylane.io", "jahia.storylane.io"],
 };
 
+/** Media pages of a Wistia account: `https://<account>.wistia.com/medias/<id>`. */
+const WISTIA_ACCOUNT_HOST = /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.wistia\.com$/;
+
 export const isVideoService = (value: unknown): value is VideoService =>
   typeof value === "string" && (VIDEO_SERVICES as readonly string[]).includes(value);
+
+/**
+ * Provider of a stored value, or undefined. Values are compared without case or surrounding
+ * spaces, so "YouTube" written before the list of providers was fixed still reads as youtube.
+ */
+export const toVideoService = (value: unknown): VideoService | undefined => {
+  const normalized = typeof value === "string" ? value.trim().toLowerCase() : value;
+  return isVideoService(normalized) ? normalized : undefined;
+};
 
 /** Splits an http(s) address into host, path segments and query parameters. No URL API: the
  * server renderer (GraalJS) has none. */
@@ -67,36 +91,66 @@ const splitUrl = (raw: string) => {
   return { host, segments, query };
 };
 
-/** Reads the candidate identifier from a pasted address of a known host of the provider. */
-const idFromUrl = (service: VideoService, raw: string): string | undefined => {
+/** Reads the candidate video from a pasted address of a known host of the provider. */
+const videoFromUrl = (service: VideoService, raw: string): ParsedVideo | undefined => {
   const url = splitUrl(raw);
-  if (!url || !HOSTS[service].includes(url.host)) return undefined;
+  if (!url) return undefined;
   const { host, segments, query } = url;
+  if (service === "wistia" && WISTIA_ACCOUNT_HOST.test(host) && !HOSTS.wistia.includes(host)) {
+    return segments[0] === "medias" && segments[1] ? { id: segments[1] } : undefined;
+  }
+  if (!HOSTS[service].includes(host)) return undefined;
   const last = segments[segments.length - 1];
+  const id = (value: string | undefined) => (value ? { id: value } : undefined);
   switch (service) {
     case "youtube":
-      if (host === "youtu.be") return segments[0];
-      if (query.get("v")) return query.get("v");
-      return ["embed", "shorts", "live", "v"].includes(segments[0] ?? "") ? segments[1] : undefined;
+      if (host === "youtu.be") return id(segments[0]);
+      if (query.get("v")) return id(query.get("v"));
+      return ["embed", "shorts", "live", "v"].includes(segments[0] ?? "")
+        ? id(segments[1])
+        : undefined;
+    case "vimeo": {
+      // The id follows "video" or "videos" (player, showcase, album, group addresses), else it is
+      // the first numeric segment (vimeo.com/<id>, channels/<name>/<id>). An unlisted video adds
+      // its key right after the id, or as the `h` parameter.
+      const after = segments.findIndex((segment) => segment === "video" || segment === "videos");
+      const index =
+        after === -1 ? segments.findIndex((segment) => ID_FORMATS.vimeo.test(segment)) : after + 1;
+      if (index === -1 || !segments[index]) return undefined;
+      const hash = segments[index + 1] ?? query.get("h");
+      return { id: segments[index], hash: hash && VIMEO_HASH.test(hash) ? hash : undefined };
+    }
     case "dailymotion":
-      if (host === "dai.ly") return segments[0];
-      return query.get("video") ?? last;
+      if (host === "dai.ly") return id(segments[0]);
+      return id(query.get("video") ?? last);
     default:
-      return last;
+      return id(last);
   }
 };
 
 /**
- * Returns the identifier of the video when `raw` is a valid identifier of `service`, or the
- * address of one of its videos. Returns undefined for anything else.
+ * Returns the video when `raw` is a valid identifier of `service`, or the address of one of its
+ * videos. Returns undefined for anything else.
  */
-export const parseVideoId = (service: unknown, raw: unknown): string | undefined => {
-  if (!isVideoService(service) || typeof raw !== "string") return undefined;
+export const parseVideo = (service: unknown, raw: unknown): ParsedVideo | undefined => {
+  const provider = toVideoService(service);
+  if (!provider || typeof raw !== "string") return undefined;
   const value = raw.trim();
   if (!value) return undefined;
-  const candidate = ID_FORMATS[service].test(value) ? value : idFromUrl(service, value);
-  return candidate && ID_FORMATS[service].test(candidate) ? candidate : undefined;
+  const candidate = ID_FORMATS[provider].test(value)
+    ? { id: value }
+    : videoFromUrl(provider, value);
+  if (!candidate || !ID_FORMATS[provider].test(candidate.id)) return undefined;
+  return candidate.hash ? candidate : { id: candidate.id };
 };
+
+/** Identifier of the video (see parseVideo). */
+export const parseVideoId = (service: unknown, raw: unknown): string | undefined =>
+  parseVideo(service, raw)?.id;
+
+/** The key of an unlisted Vimeo video when it has the expected format, else "". */
+const vimeoHash = (hash: unknown): string =>
+  typeof hash === "string" && VIMEO_HASH.test(hash) ? hash : "";
 
 /** Provider name shown to visitors (iframe titles, link names). */
 export const SERVICE_NAMES: Record<VideoService, string> = {
@@ -114,16 +168,17 @@ export const SERVICE_NAMES: Record<VideoService, string> = {
 export const getEmbedUrl = (
   service: VideoService,
   videoId: string,
-  options: { autoplay?: boolean } = {},
+  options: { autoplay?: boolean; hash?: string } = {},
 ): string => {
   if (!ID_FORMATS[service]?.test(videoId)) return "";
   const id = encodeURIComponent(videoId);
   const autoplay = options.autoplay ? "1" : "0";
+  const hash = service === "vimeo" ? vimeoHash(options.hash) : "";
   switch (service) {
     case "youtube":
       return `https://www.youtube-nocookie.com/embed/${id}?rel=0&autoplay=${autoplay}`;
     case "vimeo":
-      return `https://player.vimeo.com/video/${id}?autoplay=${autoplay}`;
+      return `https://player.vimeo.com/video/${id}?${hash ? `h=${hash}&` : ""}autoplay=${autoplay}`;
     case "wistia":
       return `https://fast.wistia.net/embed/iframe/${id}?autoPlay=${options.autoplay ? "true" : "false"}`;
     case "dailymotion":
@@ -134,14 +189,15 @@ export const getEmbedUrl = (
 };
 
 /** Address of the video on the provider's site: the target of the play link without JavaScript. */
-export const getWatchUrl = (service: VideoService, videoId: string): string => {
+export const getWatchUrl = (service: VideoService, videoId: string, hash?: string): string => {
   if (!ID_FORMATS[service]?.test(videoId)) return "";
   const id = encodeURIComponent(videoId);
+  const key = service === "vimeo" ? vimeoHash(hash) : "";
   switch (service) {
     case "youtube":
       return `https://www.youtube.com/watch?v=${id}`;
     case "vimeo":
-      return `https://vimeo.com/${id}`;
+      return `https://vimeo.com/${id}${key ? `/${key}` : ""}`;
     case "wistia":
       return `https://fast.wistia.net/embed/iframe/${id}`;
     case "dailymotion":
@@ -232,8 +288,20 @@ export const extractFirstFrameFromGif = async (gifUrl: string): Promise<string> 
   });
 
 /** Thumbnail of a Vimeo video (public oEmbed-style API). Browser only. */
-export const fetchVimeoThumbnail = async (videoId: string): Promise<string | undefined> => {
+export const fetchVimeoThumbnail = async (
+  videoId: string,
+  hash?: string,
+): Promise<string | undefined> => {
   if (!ID_FORMATS.vimeo.test(videoId)) return undefined;
+  if (vimeoHash(hash)) {
+    // An unlisted video is only described by oEmbed, from its address with the key.
+    const data = await fetchJson(
+      `https://vimeo.com/api/oembed.json?url=${encodeURIComponent(getWatchUrl("vimeo", videoId, hash))}`,
+    );
+    return data && typeof data === "object"
+      ? httpsUrl((data as { thumbnail_url?: unknown }).thumbnail_url)
+      : undefined;
+  }
   const data = await fetchJson(
     `https://vimeo.com/api/v2/video/${encodeURIComponent(videoId)}.json`,
   );
@@ -258,9 +326,10 @@ export const fetchStorylaneThumbnail = async (videoId: string): Promise<string |
 export const resolveThumbnail = async (
   service?: VideoService,
   videoId?: string,
+  hash?: string,
 ): Promise<string | undefined> => {
   if (!service || !videoId) return undefined;
-  if (service === "vimeo") return fetchVimeoThumbnail(videoId);
+  if (service === "vimeo") return fetchVimeoThumbnail(videoId, hash);
   if (service === "storylane") return fetchStorylaneThumbnail(videoId);
   return getServiceThumbnail(service, videoId);
 };
@@ -269,6 +338,6 @@ export const resolveThumbnail = async (
 export const fallbackHref = (video: VideoData): string | undefined =>
   video.isExternal
     ? video.videoService && video.videoId
-      ? getWatchUrl(video.videoService, video.videoId)
+      ? getWatchUrl(video.videoService, video.videoId, video.videoHash)
       : undefined
     : video.videoUrl;

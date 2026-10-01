@@ -32,7 +32,10 @@ export default function VideoFrame({
 
   if (video.isExternal) {
     if (!video.videoService || !video.videoId) return null;
-    const src = getEmbedUrl(video.videoService, video.videoId, { autoplay });
+    const src = getEmbedUrl(video.videoService, video.videoId, {
+      autoplay,
+      hash: video.videoHash,
+    });
     if (!src) return null;
     const frameTitle =
       video.videoService === "storylane"

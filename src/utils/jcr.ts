@@ -5,7 +5,7 @@
 import { buildNodeUrl, getNodeProps, server } from "@jahia/javascript-modules-library";
 import type { JCRNodeWrapper } from "org.jahia.services.content";
 import type { RenderContext, Resource } from "org.jahia.services.render";
-import { isVideoService, parseVideoId, type VideoData } from "./video.js";
+import { parseVideo, toVideoService, type VideoData } from "./video.js";
 
 export interface ImageData {
   url: string;
@@ -146,11 +146,13 @@ export const videoData = (
     featured: props.featured === true || props.featured === "true",
   };
   if (isExternal) {
-    const service = isVideoService(props.videoService) ? props.videoService : "youtube";
-    const videoId = parseVideoId(service, props.videoId);
-    if (videoId) {
+    // A missing or unknown provider reads as YouTube, the default of the field.
+    const service = toVideoService(props.videoService) ?? "youtube";
+    const parsed = parseVideo(service, props.videoId);
+    if (parsed) {
       data.videoService = service;
-      data.videoId = videoId;
+      data.videoId = parsed.id;
+      if (parsed.hash) data.videoHash = parsed.hash;
     }
   } else {
     data.videoUrl = fileUrl(props.video, renderContext);

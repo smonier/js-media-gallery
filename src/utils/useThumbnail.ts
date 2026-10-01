@@ -13,7 +13,7 @@ export default function useThumbnail(video: VideoData | undefined): string | und
   useEffect(() => {
     if (!video || initial) return;
     let active = true;
-    resolveThumbnail(video.videoService, video.videoId).then((url) => {
+    resolveThumbnail(video.videoService, video.videoId, video.videoHash).then((url) => {
       if (active && url) setThumbnail(url);
     });
     return () => {
