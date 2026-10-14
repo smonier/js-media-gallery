@@ -369,12 +369,14 @@ Check contrast for each theme: text needs 4.5:1 on its surface, and focus rings 
 
 ## Internationalisation
 
-The module ships **English** and **French**:
+The module ships **English** and **French** for editors, and **English**, **French** and **European Portuguese** for visitors:
 
 - `settings/resources/js-media-gallery_en.properties` and `_fr.properties`: Content Editor labels, tooltips, choice values and view names.
-- `settings/locales/en.json` and `fr.json`: text shown to visitors (button names, dialog names, announcements, empty states), loaded under the `js-media-gallery` namespace.
+- `settings/locales/en.json`, `fr.json` and `pt.json` (European Portuguese): text shown to visitors (button names, dialog names, announcements, empty states), loaded under the `js-media-gallery` namespace.
 
 Content is translated per language for titles, descriptions, banner texts, captions, transcripts, the hero's call to action label and link target, video files, captions files and external video identifiers. The provider, posters, the featured flag, the item width and the image source are shared by all languages.
+
+There is no Portuguese resource bundle: editors work in English or French, so `settings/resources` has no `_pt.properties`.
 
 To add a language, add `settings/locales/<lang>.json` and `settings/resources/js-media-gallery_<lang>.properties` with the same keys as the English files.
 
@@ -438,7 +440,7 @@ settings/
 ├── definitions.cnd      namespaces and shared mixins
 ├── content-editor-forms/fieldsets/   gallery type choice list
 ├── content-types-icons/
-├── locales/             visitor-facing text (en, fr)
+├── locales/             visitor-facing text (en, fr, pt)
 └── resources/           Content Editor labels (en, fr)
 migrations/              upgrade scripts
 ```

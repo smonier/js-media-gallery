@@ -1,0 +1,95 @@
+{
+  "mediaGallery": {
+    "imageGallery": {
+      "title": "Galeria de imagens",
+      "noImages": "Nenhuma imagem disponível",
+      "views": {
+        "grid": "Vista em grelha",
+        "masonry": "Disposição em mosaico",
+        "carousel": "Carrossel"
+      }
+    },
+    "videoGallery": {
+      "title": "Galeria de vídeos",
+      "noVideos": "Nenhum vídeo disponível",
+      "views": {
+        "featured": "Destaque + Grelha",
+        "grid": "Vista em grelha"
+      }
+    },
+    "internalVideo": {
+      "title": "Vídeo interno",
+      "noVideo": "Nenhum vídeo selecionado",
+      "selectVideo": "Selecionar um ficheiro de vídeo"
+    },
+    "externalVideo": {
+      "title": "Vídeo externo",
+      "noVideoId": "Nenhum identificador de vídeo indicado",
+      "services": {
+        "youtube": "YouTube",
+        "vimeo": "Vimeo",
+        "wistia": "Wistia",
+        "dailymotion": "Dailymotion",
+        "storylane": "Storylane"
+      }
+    },
+    "videoHeading": {
+      "title": "Faixa de vídeo em destaque",
+      "noVideo": "Nenhum vídeo selecionado"
+    },
+    "common": {
+      "play": "Reproduzir",
+      "pause": "Pausa",
+      "previous": "Anterior",
+      "next": "Seguinte",
+      "close": "Fechar",
+      "loading": "A carregar...",
+      "error": "Ocorreu um erro",
+      "newWindow": "(abre numa nova janela)"
+    },
+    "image": {
+      "untitled": "Imagem {{index}} de {{total}}",
+      "viewFullSize": "ver em tamanho real",
+      "position": "Imagem {{index}} de {{total}}",
+      "viewer": "Visualizador de imagens",
+      "previous": "Imagem anterior",
+      "next": "Imagem seguinte",
+      "close": "Fechar o visualizador de imagens",
+      "show": "Mostrar a imagem {{index}}",
+      "more_one": "Ver mais {{count}} imagem",
+      "more_other": "Ver mais {{count}} imagens"
+    },
+    "carousel": {
+      "label": "Carrossel de imagens",
+      "roleDescription": "carrossel",
+      "slideRoleDescription": "diapositivo",
+      "pause": "Pausar a apresentação",
+      "play": "Iniciar a apresentação",
+      "goTo": "Mostrar a imagem {{index}}",
+      "previous": "Imagem anterior",
+      "next": "Imagem seguinte"
+    },
+    "video": {
+      "untitled": "Vídeo sem título",
+      "play": "Reproduzir o vídeo: {{title}}",
+      "openDemo": "Abrir a demonstração interativa: {{title}}",
+      "frameTitle": "Vídeo {{service}}: {{title}}",
+      "demoFrameTitle": "Demonstração interativa Storylane: {{title}}",
+      "player": "Leitor de vídeo",
+      "close": "Fechar o leitor de vídeo",
+      "nowPlaying": "Vídeo apresentado: {{title}}",
+      "unsupported": "O seu navegador não consegue reproduzir este vídeo.",
+      "download": "Transferir o vídeo",
+      "captions": "Legendas",
+      "transcript": "Transcrição",
+      "transcripts": "Transcrições"
+    },
+    "hero": {
+      "pause": "Pausar o vídeo de fundo",
+      "play": "Reproduzir o vídeo de fundo"
+    },
+    "richText": {
+      "imageWithoutAlt": "Uma imagem deste texto não tem alternativa textual: atribuir-lhe uma no editor de texto formatado (é apresentada aos visitantes como decorativa)."
+    }
+  }
+}

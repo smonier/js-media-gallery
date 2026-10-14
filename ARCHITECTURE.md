@@ -114,7 +114,7 @@ Storylane demos open in a modal dialog instead of playing in place: `VideoFrame`
 1. Create `src/components/<Name>/<view>.server.tsx` with `jahiaComponent({ componentType: "view", nodeType, name, displayName }, render)`. A node type has one view per name: two views with the same name and node type stop the module from loading.
 2. Render through the component's `GalleryFrame` (or add `AddResources` yourself), and read the data with `collectImages`, `collectVideos` or `videoData`.
 3. Put interactive parts in a `*.island.client.tsx` file and pass it serializable props only.
-4. Add the view's label, `jsmediagallerynt_<type>.<view>`, to the English and French resource bundles, and its visitor-facing text to `settings/locales/en.json` and `fr.json`.
+4. Add the view's label, `jsmediagallerynt_<type>.<view>`, to the English and French resource bundles, and its visitor-facing text to `settings/locales/en.json`, `fr.json` and `pt.json`.
 
 ## Tests
 
