@@ -1,5 +1,10 @@
 # js-media-gallery Changelog
 
+## Unreleased
+
+- European Portuguese (pt) visitor-facing labels (`settings/locales/pt.json`). Editor labels stay in English and French.
+- A unit test checks that every locale file has the keys and placeholders of `en.json`.
+
 ## 1.1.0 (2026-10-01)
 
 - Accessible media components (RGAA 4.1.2 / WCAG 2.1 AA): image and video links that work without JavaScript, native modal dialogs that keep and return the focus, a carousel with a pause button that respects reduced motion, captions and transcripts for videos, headings placed under the page outline, EN and FR labels.
